@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-// import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 // import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 // Import your screens
-import 'views/Register.dart';
-import 'views/ResetPasscode.dart';
-import 'views/Login.dart';
-import 'views/ForgotPasscode.dart';
-import 'views/Map.dart';
-import 'views/errors/InvalidToken.dart';
+import 'views/register_screen.dart';
+import 'views/reset_passcode_screen.dart';
+import 'views/login_screen.dart';
+import 'views/forgot_passcode_screen.dart';
+import 'views/map_screen.dart';
+import 'views/errors/invalid_token_screen.dart';
 
 void main() {
   // Ensure Flutter binding is initialized
@@ -77,7 +77,7 @@ class MyApp extends StatelessWidget {
 
       // Route configuration
       routes: {
-        '/register': (context) => const Register.dart(),
+        '/register': (context) => const Register(),
         '/login': (context) => const Login(),
         '/forgot-passcode': (context) => const ForgotPasscode(),
         '/map': (context) => const Map(),

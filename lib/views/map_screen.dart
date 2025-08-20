@@ -5,14 +5,14 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class MapPage extends StatefulWidget {
-  const MapPage({Key? key}) : super(key: key);
+class Map extends StatefulWidget {
+  const Map({Key? key}) : super(key: key);
 
   @override
-  State<MapPage> createState() => _MapPageState();
+  State<Map> createState() => _MapPageState();
 }
 
-class _MapPageState extends State<MapPage> {
+class _MapPageState extends State<Map> {
   final MapController _mapController = MapController();
   List<Map<String, dynamic>> _locations = [];
   bool _updateDialog = false;
