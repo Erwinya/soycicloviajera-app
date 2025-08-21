@@ -58,7 +58,7 @@ class MyApp extends StatelessWidget {
       ),
 
       // Localization (uncomment when ready)
-      /*
+
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
@@ -70,7 +70,6 @@ class MyApp extends StatelessWidget {
         Locale('es'),
         Locale('tr'),
       ],
-      */
 
       // Initial route
       initialRoute: '/register',
