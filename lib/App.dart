@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:viajerasfrontend2/plugins/i18n.dart';
 // import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 // Import your screens
@@ -76,11 +77,11 @@ class MyApp extends StatelessWidget {
 
       // Route configuration
       routes: {
-        '/register': (context) => const Register(),
+        '/register': (context) => const register_screen(),
         '/login': (context) => const Login(),
-        '/forgot-passcode': (context) => const ForgotPasscode(),
+        '/forgot-passcode': (context) => const forgot_passcode_screen(),
         '/map': (context) => const Map(),
-        '/invalid-token': (context) => const InvalidToken(),
+        '/invalid-token': (context) => const invalid_token_screen(),
       },
 
       // Handle dynamic routes (like reset-passcode with token)
@@ -91,7 +92,7 @@ class MyApp extends StatelessWidget {
         if (uri.pathSegments.isNotEmpty && uri.pathSegments[0] == 'reset-passcode') {
           final token = uri.queryParameters['token'];
           return MaterialPageRoute(
-            builder: (context) => ResetPasscode(token: token),
+            builder: (context) => reset_passcode_screen(token: token),
             settings: settings,
           );
         }
@@ -105,7 +106,7 @@ class MyApp extends StatelessWidget {
       // 404 fallback
       onUnknownRoute: (settings) {
         return MaterialPageRoute(
-          builder: (context) => const InvalidToken(),
+          builder: (context) => const invalid_token_screen(),
         );
       },
     );
