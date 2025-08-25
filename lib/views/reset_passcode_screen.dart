@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 
-class ResetPasscodeScreen extends StatefulWidget {
+class reset_passcode_screen extends StatefulWidget {
   final String? token;
 
-  const ResetPasscodeScreen({Key? key, this.token}) : super(key: key);
+  const reset_passcode_screen({Key? key, this.token}) : super(key: key);
 
   @override
-  State<ResetPasscodeScreen> createState() => _ResetPasscodeScreenState();
+  State<reset_passcode_screen> createState() => _reset_passcode_screen();
 }
 
-class _ResetPasscodeScreenState extends State<ResetPasscodeScreen> {
+class _reset_passcode_screen extends State<reset_passcode_screen> {
   final _formKey = GlobalKey<FormState>();
   final _dio = Dio();
 
