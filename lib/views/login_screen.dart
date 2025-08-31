@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:io'; // For Platform.isIOS or Platform.isAndroid if needed for base URL, or just for general IO
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Login extends StatefulWidget {
@@ -16,7 +19,16 @@ class _LoginPageState extends State<Login> {
   bool _visible = false;
   bool _isLoading = false;
   String _errorMessage = '';
-  String _selectedLocale = 'tr';
+  String _selectedLocale = 'tr'; // Default locale
+
+  // For local development, you might use '10.0.2.2' for Android emulator accessing localhost
+  // For iOS simulator accessing localhost, use 'localhost' or '127.0.0.1'
+  // For a deployed backend, use its actual domain name.
+  // IMPORTANT: USE HTTPS for production or any sensitive data transfer.
+  static const String _yourBackendDomain = 'YOUR_BACKEND_BASE_URL'; // E.g., 'api.example.com' OR for local dev '10.0.2.2:3000'
+  static const bool _isProduction = bool.fromEnvironment('dart.vm.product'); // Or your own way to determine environment
+  final String _baseUrl = _isProduction ? 'https://$_yourBackendDomain' : 'http://$_yourBackendDomain';
+
 
   final List<String> _languageCodes = ['es', 'en', 'tr'];
   final Map<String, String> _languageLabels = {
@@ -28,8 +40,13 @@ class _LoginPageState extends State<Login> {
   @override
   void initState() {
     super.initState();
-    _loadLanguageLabels();
-    _checkIfLoggedIn();
+    _loadSelectedLocale(); // Renamed for clarity
+    // Schedule _checkIfLoggedIn to run after the first frame to ensure context is available for navigation
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) { // Check if the widget is still in the tree
+        _checkIfLoggedIn();
+      }
+    });
   }
 
   @override
@@ -39,28 +56,34 @@ class _LoginPageState extends State<Login> {
     super.dispose();
   }
 
-  void _loadLanguageLabels() async {
+  Future<void> _loadSelectedLocale() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _selectedLocale = prefs.getString('locale') ?? 'tr';
-    });
-  }
-
-  void _checkIfLoggedIn() async {
-    final prefs = await SharedPreferences.getInstance();
-    final accessToken = prefs.getString('accessToken');
-
-    if (accessToken != null) {
-      Navigator.pushReplacementNamed(context, '/map');
+    if (mounted) { // Check if the widget is still in the tree
+      setState(() {
+        _selectedLocale = prefs.getString('locale') ?? 'tr'; // Default to 'tr' if no locale is saved
+      });
     }
   }
 
-  void _changeLang(String newLang) async {
+  Future<void> _checkIfLoggedIn() async {
+    final prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('accessToken');
+
+    if (accessToken != null && accessToken.isNotEmpty) {
+      if (mounted) { // Check before navigating
+         Navigator.pushReplacementNamed(context, '/map');
+      }
+    }
+  }
+
+  Future<void> _changeLang(String newLang) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('locale', newLang);
-    setState(() {
-      _selectedLocale = newLang;
-    });
+    if (mounted) {
+      setState(() {
+        _selectedLocale = newLang;
+      });
+    }
   }
 
   String _t(String key) {
@@ -74,6 +97,8 @@ class _LoginPageState extends State<Login> {
         'signup': 'Kayıt Ol',
         'fillAllFields': 'Lütfen tüm alanları doldurun',
         'invalidCredentials': 'Geçersiz email veya şifre',
+        'loginFailedGeneric': 'Giriş yapılamadı. Lütfen tekrar deneyin.',
+        'errorConnecting': 'Sunucuya bağlanırken hata oluştu.',
       },
       'en': {
         'account': 'Account',
@@ -84,6 +109,8 @@ class _LoginPageState extends State<Login> {
         'signup': 'Sign Up',
         'fillAllFields': 'Please fill all fields',
         'invalidCredentials': 'Invalid email or password',
+        'loginFailedGeneric': 'Login failed. Please try again.',
+        'errorConnecting': 'Error connecting to the server.',
       },
       'es': {
         'account': 'Cuenta',
@@ -94,66 +121,105 @@ class _LoginPageState extends State<Login> {
         'signup': 'Registrarse',
         'fillAllFields': 'Por favor llene todos los campos',
         'invalidCredentials': 'Email o contraseña inválidos',
+        'loginFailedGeneric': 'Error al iniciar sesión. Por favor, inténtelo de nuevo.',
+        'errorConnecting': 'Error al conectar con el servidor.',
       },
     };
-
-    return translations[_selectedLocale]?[key] ?? key;
+    return translations[_selectedLocale]?[key] ?? key; // Fallback to key if translation is missing
   }
 
   Future<void> _login() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      setState(() {
-        _errorMessage = _t('fillAllFields');
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = _t('fillAllFields');
+        });
+      }
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-      _errorMessage = '';
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = '';
+      });
+    }
 
     try {
-      const baseUrl = 'your-backend-url.com'; // Replace with actual URL
-      final url = Uri.parse(
-          'http://$baseUrl/api/traveller?email=${Uri.encodeComponent(_emailController.text)}&passcode=${Uri.encodeComponent(_passwordController.text)}'
-      );
+      // **IMPORTANT**: Your backend should have a specific endpoint for login, e.g., /api/auth/login or /api/traveller/login
+      // This endpoint MUST accept POST requests.
+      final url = Uri.parse('$_baseUrl/api/traveller/login'); // ADJUST YOUR LOGIN ENDPOINT HERE
 
-      final response = await http.get(
+      final response = await http.post(
         url,
         headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
           'Accept': 'application/json',
         },
-      );
+        body: jsonEncode(<String, String>{
+          'email': _emailController.text,
+          'passcode': _passwordController.text, // Ensure your backend expects 'passcode'
+        }),
+      ).timeout(const Duration(seconds: 15)); // Add a timeout
 
       final data = jsonDecode(response.body);
 
-      if (!response.statusCode.toString().startsWith('2') || data['accessToken'] == null) {
-        throw Exception(data['message'] ?? 'Login failed');
+      if (response.statusCode == 200 || response.statusCode == 201) { // Typically 200 or 201 for successful login
+        if (data['accessToken'] != null) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('accessToken', data['accessToken']);
+
+          if (data['user'] != null) {
+            await prefs.setString('user', jsonEncode(data['user']));
+          }
+          if (mounted) {
+            Navigator.pushReplacementNamed(context, '/map');
+          }
+        } else {
+          // Access token is missing in a 200/201 response, which is unexpected
+           throw Exception(_t('loginFailedGeneric'));
+        }
+      } else if (response.statusCode == 401 || response.statusCode == 400) { // 401 for unauthorized, 400 for bad request (e.g. validation)
+        // Try to get a message from backend, otherwise show specific message
+        final message = data['message'] ?? (response.statusCode == 401 ? _t('invalidCredentials') : _t('loginFailedGeneric'));
+        throw Exception(message);
+      }
+      else {
+        // Handle other status codes (500, 404, etc.)
+        throw Exception(_t('loginFailedGeneric') + ' (Status: ${response.statusCode})');
       }
 
-      // Store the token
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('accessToken', data['accessToken']);
-
-      // Store user data if available
-      if (data['user'] != null) {
-        await prefs.setString('user', jsonEncode(data['user']));
+    } on SocketException { // Catch no internet or server down
+        if (mounted) {
+          setState(() {
+            _errorMessage = _t('errorConnecting');
+          });
+        }
+    } on TimeoutException { // Catch request timeout
+        if (mounted) {
+          setState(() {
+            _errorMessage = _t('errorConnecting') + " (Timeout)";
+          });
+        }
+    }
+    catch (error) {
+      if (mounted) {
+        setState(() {
+          // Use the error message directly if it's already a string, or convert
+          _errorMessage = error is String ? error : error.toString().replaceFirst('Exception: ', '');
+          // Specific check for invalid credentials if backend sends a known message within the error string
+          // This might be redundant if status code 401 is handled above cleanly.
+          if (_errorMessage.toLowerCase().contains('invalid') || _errorMessage.toLowerCase().contains('unauthorized')) {
+             _errorMessage = _t('invalidCredentials');
+          }
+        });
       }
-
-      // Redirect to map
-      Navigator.pushReplacementNamed(context, '/map');
-
-    } catch (error) {
-      setState(() {
-        _errorMessage = error.toString().contains('Login failed')
-            ? _t('invalidCredentials')
-            : error.toString().replaceAll('Exception: ', '');
-      });
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -165,256 +231,278 @@ class _LoginPageState extends State<Login> {
         height: double.infinity,
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/hero-banner.png'),
+            image: AssetImage('assets/images/hero-banner.png'), // Ensure this asset exists
             fit: BoxFit.cover,
           ),
         ),
         child: Center(
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 400),
-            width: double.infinity,
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            child: Card(
-              elevation: 8,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Container(
-                padding: const EdgeInsets.fromLTRB(32, 32, 32, 24),
-                decoration: BoxDecoration(
-                  color: Colors.white,
+          child: SingleChildScrollView( // Added SingleChildScrollView to prevent overflow on small screens
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 400),
+              width: double.infinity,
+              // Removed margin as padding is handled by SingleChildScrollView
+              child: Card(
+                elevation: 8,
+                shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Logo
-                    Center(
-                      child: Container(
-                        constraints: const BoxConstraints(maxWidth: 180),
-                        margin: const EdgeInsets.fromLTRB(0, 16, 0, 16),
-                        child: Image.asset(
-                          'assets/images/cicloviajera-color-2.png',
-                          fit: BoxFit.contain,
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(32, 32, 32, 24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Logo
+                      Center(
+                        child: Container(
+                          constraints: const BoxConstraints(maxWidth: 180),
+                          margin: const EdgeInsets.fromLTRB(0, 16, 0, 16),
+                          child: Image.asset(
+                            'assets/images/cicloviajera-color-2.png', // Ensure this asset exists
+                            fit: BoxFit.contain,
+                          ),
                         ),
                       ),
-                    ),
 
-                    // Account title
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      child: Text(
-                        _t('account'),
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ),
-
-                    // Error message
-                    if (_errorMessage.isNotEmpty)
+                      // Account title
                       Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(12),
                         margin: const EdgeInsets.only(bottom: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.red.shade50,
-                          border: Border.all(color: Colors.red.shade200),
-                          borderRadius: BorderRadius.circular(4),
+                        child: Text(
+                          _t('account'),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87,
+                          ),
                         ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.error, color: Colors.red.shade600, size: 20),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                _errorMessage,
-                                style: TextStyle(
-                                  color: Colors.red.shade800,
-                                  fontSize: 14,
+                      ),
+
+                      // Error message
+                      if (_errorMessage.isNotEmpty)
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12),
+                          margin: const EdgeInsets.only(bottom: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade50,
+                            border: Border.all(color: Colors.red.shade200),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.error_outline, color: Colors.red.shade600, size: 20), // Changed to outline
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  _errorMessage,
+                                  style: TextStyle(
+                                    color: Colors.red.shade800,
+                                    fontSize: 14,
+                                  ),
                                 ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                      // Email field
+                      TextField(
+                        controller: _emailController,
+                        decoration: InputDecoration(
+                          hintText: _t('email'),
+                          prefixIcon: const Icon(Icons.email_outlined),
+                          border: const OutlineInputBorder(),
+                          isDense: true,
+                          contentPadding: const EdgeInsets.all(12),
+                        ),
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next, // For better keyboard navigation
+                      ),
+
+                      // Password label and forgot password
+                      Container(
+                        margin: const EdgeInsets.fromLTRB(0, 16, 0, 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              _t('password'),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.pushNamed(context, '/forgot-passcode');
+                              },
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    _t('forgot'),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.blue,
+                                      decoration: TextDecoration.none,
+                                    ),
+                                  ),
+                                  const Icon(
+                                    Icons.chevron_right,
+                                    color: Colors.blue,
+                                    size: 16,
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
                       ),
 
-                    // Email field
-                    TextField(
-                      controller: _emailController,
-                      decoration: InputDecoration(
-                        hintText: _t('email'),
-                        prefixIcon: const Icon(Icons.email_outlined),
-                        border: const OutlineInputBorder(),
-                        isDense: true,
-                        contentPadding: const EdgeInsets.all(12),
-                      ),
-                      keyboardType: TextInputType.emailAddress,
-                    ),
-
-                    // Password label and forgot password
-                    Container(
-                      margin: const EdgeInsets.fromLTRB(0, 16, 0, 8),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            _t('password'),
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black87,
+                      // Password field
+                      TextField(
+                        controller: _passwordController,
+                        obscureText: !_visible,
+                        decoration: InputDecoration(
+                          hintText: _t('password'),
+                          prefixIcon: const Icon(Icons.lock_outline),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _visible ? Icons.visibility_off_outlined : Icons.visibility_outlined, // Changed to outlined
                             ),
+                            onPressed: () {
+                              if (mounted) {
+                                setState(() {
+                                  _visible = !_visible;
+                                });
+                              }
+                            },
                           ),
-                          GestureDetector(
+                          border: const OutlineInputBorder(),
+                          isDense: true,
+                          contentPadding: const EdgeInsets.all(12),
+                        ),
+                         keyboardType: TextInputType.visiblePassword,
+                         textInputAction: TextInputAction.done, // For submitting form
+                         onSubmitted: (_) => _isLoading ? null : _login(), // Allow login on keyboard done
+                      ),
+
+                      // Login button
+                      Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.fromLTRB(0, 24, 0, 24), // Increased top margin
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _login,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue.shade600, // Slightly darker blue for better contrast
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8), // Slightly more rounded
+                            ),
+                            elevation: 2, // Added subtle elevation
+                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  ),
+                                )
+                              : Text(
+                                  _t('login'),
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold, // Bolder text
+                                  ),
+                                ),
+                        ),
+                      ),
+
+                      // Sign up link
+                      Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.only(bottom: 16), // Increased bottom margin
+                        child: Center(
+                          child: GestureDetector(
                             onTap: () {
-                              Navigator.pushNamed(context, '/forgot-passcode');
+                              Navigator.pushNamed(context, '/register');
                             },
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center, // Center the row content
                               children: [
                                 Text(
-                                  _t('forgot'),
+                                  _t('signup'),
                                   style: const TextStyle(
-                                    fontSize: 12,
                                     color: Colors.blue,
+                                    fontWeight: FontWeight.w500, // Slightly bolder
                                     decoration: TextDecoration.none,
                                   ),
                                 ),
                                 const Icon(
                                   Icons.chevron_right,
                                   color: Colors.blue,
-                                  size: 16,
+                                  size: 18, // Slightly larger
                                 ),
                               ],
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-
-                    // Password field
-                    TextField(
-                      controller: _passwordController,
-                      obscureText: !_visible,
-                      decoration: InputDecoration(
-                        hintText: _t('password'),
-                        prefixIcon: const Icon(Icons.lock_outline),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _visible ? Icons.visibility_off : Icons.visibility,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _visible = !_visible;
-                            });
-                          },
-                        ),
-                        border: const OutlineInputBorder(),
-                        isDense: true,
-                        contentPadding: const EdgeInsets.all(12),
-                      ),
-                    ),
-
-                    // Login button
-                    Container(
-                      width: double.infinity,
-                      margin: const EdgeInsets.fromLTRB(0, 16, 0, 24),
-                      child: ElevatedButton(
-                        onPressed: _isLoading ? null : _login,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue.shade100,
-                          foregroundColor: Colors.blue.shade800,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: _isLoading
-                            ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                            : Text(
-                          _t('login'),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
                         ),
                       ),
-                    ),
 
-                    // Sign up link
-                    Container(
-                      width: double.infinity,
-                      margin: const EdgeInsets.only(bottom: 8),
-                      child: Center(
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.pushNamed(context, '/register');
-                          },
+                      // Language buttons
+                      if (_languageCodes.length > 1) // Only show if there's more than one language
+                        Container(
+                          margin: const EdgeInsets.only(top: 16),
                           child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                _t('signup'),
-                                style: const TextStyle(
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.none,
+                            children: _languageCodes.map((code) {
+                              return Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                                  child: OutlinedButton(
+                                    onPressed: () => _changeLang(code),
+                                    style: OutlinedButton.styleFrom(
+                                      backgroundColor: _selectedLocale == code
+                                          ? Colors.blue.shade50 // Lighter blue for selection
+                                          : Colors.transparent,
+                                      foregroundColor: _selectedLocale == code
+                                          ? Colors.blue.shade700
+                                          : Colors.black54, // Greyer for unselected
+                                      side: BorderSide(
+                                        color: _selectedLocale == code
+                                            ? Colors.blue.shade300
+                                            : Colors.grey.shade300,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4), // Adjusted padding
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      _languageLabels[code] ?? code.toUpperCase(),
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 11, // Slightly smaller
+                                        fontWeight: _selectedLocale == code ? FontWeight.bold : FontWeight.normal,
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                              const Icon(
-                                Icons.chevron_right,
-                                color: Colors.blue,
-                                size: 16,
-                              ),
-                            ],
+                              );
+                            }).toList(),
                           ),
                         ),
-                      ),
-                    ),
-
-                    // Language buttons
-                    Container(
-                      margin: const EdgeInsets.only(top: 16),
-                      child: Row(
-                        children: _languageCodes.map((code) {
-                          return Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 2),
-                              child: OutlinedButton(
-                                onPressed: () => _changeLang(code),
-                                style: OutlinedButton.styleFrom(
-                                  backgroundColor: _selectedLocale == code
-                                      ? Colors.blue
-                                      : Colors.transparent,
-                                  foregroundColor: _selectedLocale == code
-                                      ? Colors.white
-                                      : Colors.black87,
-                                  side: BorderSide(
-                                    color: _selectedLocale == code
-                                        ? Colors.blue
-                                        : Colors.grey.shade300,
-                                  ),
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                ),
-                                child: Text(
-                                  _languageLabels[code] ?? code,
-                                  style: const TextStyle(fontSize: 12),
-                                ),
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
