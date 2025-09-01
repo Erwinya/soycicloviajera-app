@@ -1,0 +1,21 @@
+{
+  "appTitle": "Viajeras",
+  "welcome_message": "Bienvenido",
+  "description": "Descripción",
+  "change_language": "Cambiar idioma",
+  "updateProfile": "Actualizar Perfil",
+  "logout": "Cerrar Sesión",
+  "cancel": "Cancelar",
+  "save": "Guardar",
+  "owner": "Propietario",
+  "about": "Acerca de",
+  "offer": "Oferta",
+  "updateLocation": "Actualizar Ubicación",
+  "cancelUpdateLocation": "Cancelar",
+  "profileUpdated": "Perfil actualizado exitosamente",
+  "name": "Nombre",
+  "email": "Correo",
+  "aboutMe": "Acerca de Mí",
+  "preferredContact": "Método de Contacto Preferido",
+  "contactInfo": "Información de Contacto"
+}

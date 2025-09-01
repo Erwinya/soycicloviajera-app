@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import '../services/forgot_passcode_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ForgotPasscodePage extends StatefulWidget {
@@ -16,11 +16,14 @@ class _ForgotPasscodePageState extends State<ForgotPasscodePage> {
   String _successMessage = '';
   String _errorMessage = '';
   String _selectedLocale = 'tr';
+  final String _baseUrl = 'your-backend-url.com'; // Replace with actual URL
+  late final ForgotPasscodeService _forgotPasscodeService;
 
   @override
   void initState() {
     super.initState();
     _loadLocale();
+    _forgotPasscodeService = ForgotPasscodeService(baseUrl: _baseUrl);
   }
 
   @override
@@ -41,8 +44,10 @@ class _ForgotPasscodePageState extends State<ForgotPasscodePage> {
       'tr': {
         'email': 'Email',
         'sendResetLink': 'Sıfırlama Bağlantısı Gönder',
-        'resetLinkSentMsg': 'Şifre sıfırlama bağlantısı email adresinize gönderildi',
-        'resetLinkSentErrorMsg': 'Şifre sıfırlama bağlantısı gönderilirken hata oluştu',
+        'resetLinkSentMsg':
+            'Şifre sıfırlama bağlantısı email adresinize gönderildi',
+        'resetLinkSentErrorMsg':
+            'Şifre sıfırlama bağlantısı gönderilirken hata oluştu',
         'obligatedFieldMsg': 'Bu alan zorunludur: ',
         'validMailErrorMsg': 'Geçerli bir email adresi giriniz',
       },
@@ -57,8 +62,10 @@ class _ForgotPasscodePageState extends State<ForgotPasscodePage> {
       'es': {
         'email': 'Correo',
         'sendResetLink': 'Enviar Enlace de Restablecimiento',
-        'resetLinkSentMsg': 'El enlace de restablecimiento de contraseña ha sido enviado a su correo',
-        'resetLinkSentErrorMsg': 'Error al enviar el enlace de restablecimiento',
+        'resetLinkSentMsg':
+            'El enlace de restablecimiento de contraseña ha sido enviado a su correo',
+        'resetLinkSentErrorMsg':
+            'Error al enviar el enlace de restablecimiento',
         'obligatedFieldMsg': 'Este campo es obligatorio: ',
         'validMailErrorMsg': 'Por favor ingrese una dirección de correo válida',
       },
@@ -86,7 +93,8 @@ class _ForgotPasscodePageState extends State<ForgotPasscodePage> {
     }
 
     if (_emailController.text.isEmpty ||
-        !RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(_emailController.text)) {
+        !RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
+            .hasMatch(_emailController.text)) {
       return;
     }
 
@@ -97,20 +105,11 @@ class _ForgotPasscodePageState extends State<ForgotPasscodePage> {
     });
 
     try {
-      const baseUrl = 'your-backend-url.com'; // Replace with actual URL
-      final url = Uri.parse('http://$baseUrl/api/forgot-passcode?email=${Uri.encodeComponent(_emailController.text)}');
-
-      final response = await http.post(
-        url,
-        headers: {
-          'accept': '*/*',
-        },
-      );
-
+      final response =
+          await _forgotPasscodeService.sendResetLink(_emailController.text);
       if (!response.statusCode.toString().startsWith('2')) {
         throw Exception(response.body);
       }
-
       setState(() {
         _successMessage = _t('resetLinkSentMsg');
       });
@@ -196,17 +195,17 @@ class _ForgotPasscodePageState extends State<ForgotPasscodePage> {
                           ),
                           child: _loading
                               ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
                               : Text(
-                            _t('sendResetLink'),
-                            style: const TextStyle(fontSize: 16),
-                          ),
+                                  _t('sendResetLink'),
+                                  style: const TextStyle(fontSize: 16),
+                                ),
                         ),
                       ),
 

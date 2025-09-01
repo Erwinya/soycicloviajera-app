@@ -12,9 +12,6 @@ class InvalidTokenScreen extends StatefulWidget {
 }
 
 class _InvalidTokenScreenState extends State<InvalidTokenScreen> {
-  bool _loading = true;
-  String? _error;
-
   @override
   void initState() {
     super.initState();
@@ -23,10 +20,7 @@ class _InvalidTokenScreenState extends State<InvalidTokenScreen> {
 
   Future<void> _validateToken() async {
     if (widget.token == null || widget.token!.isEmpty) {
-      setState(() {
-        _error = 'Token is missing.';
-        _loading = false;
-      });
+      setState(() {});
       return;
     }
 
@@ -35,41 +29,25 @@ class _InvalidTokenScreenState extends State<InvalidTokenScreen> {
         defaultValue: 'localhost:3000'); // varsayılan değer
 
     try {
-      final response = await http.get(
-          Uri.parse('http://$baseUrl/api/validate-reset-token?token=${widget.token}')
-      );
+      final response = await http.get(Uri.parse(
+          'http://$baseUrl/api/validate-reset-token?token=${widget.token}'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['valid'] == true) {
           // Reset passcode sayfasına yönlendir
           if (mounted) {
-            Navigator.pushReplacementNamed(
-                context,
-                '/reset-passcode',
-                arguments: {'token': widget.token}
-            );
+            Navigator.pushReplacementNamed(context, '/reset-passcode',
+                arguments: {'token': widget.token});
           }
         } else {
-          setState(() {
-            _error = 'Invalid or expired token.';
-          });
+          setState(() {});
         }
       } else {
-        setState(() {
-          _error = 'Invalid or expired token.';
-        });
+        setState(() {});
       }
     } catch (e) {
-      setState(() {
-        _error = 'Invalid or expired token.';
-      });
-    } finally {
-      if (mounted) {
-        setState(() {
-          _loading = false;
-        });
-      }
+      setState(() {});
     }
   }
 
@@ -142,17 +120,17 @@ class _InvalidTokenScreenState extends State<InvalidTokenScreen> {
                                   ),
                                 ),
                               ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Row(
+                              child: const Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: const Row(
                                   children: [
                                     Icon(
                                       Icons.error,
                                       color: Colors.red,
                                       size: 20,
                                     ),
-                                    const SizedBox(width: 12),
-                                    const Expanded(
+                                    SizedBox(width: 12),
+                                    Expanded(
                                       child: Text(
                                         'Invalid or expired reset token.',
                                         style: TextStyle(

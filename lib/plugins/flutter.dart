@@ -25,12 +25,12 @@ class AppTheme {
     ),
 
     // Card tema (Vuetify v-card benzeri)
-    cardTheme: CardTheme(
+    cardTheme: const CardThemeData(
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.all(Radius.circular(12)),
       ),
-      margin: const EdgeInsets.all(8),
+      margin: EdgeInsets.all(8),
     ),
 
     // Button tema (Vuetify v-btn benzeri)
@@ -75,9 +75,9 @@ class AppTheme {
     ),
 
     // Dialog tema (Vuetify v-dialog benzeri)
-    dialogTheme: DialogTheme(
+    dialogTheme: const DialogThemeData(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.all(Radius.circular(16)),
       ),
       elevation: 8,
     ),
@@ -105,12 +105,10 @@ class AppTheme {
   static ThemeData darkTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
-
     colorScheme: ColorScheme.fromSeed(
       seedColor: const Color(0xFF1976D2),
       brightness: Brightness.dark,
     ),
-
     appBarTheme: const AppBarTheme(
       centerTitle: true,
       elevation: 0,
@@ -120,15 +118,19 @@ class AppTheme {
         fontWeight: FontWeight.w500,
       ),
     ),
-
-    cardTheme: CardTheme(
+    cardTheme: const CardThemeData(
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.all(Radius.circular(12)),
       ),
-      margin: const EdgeInsets.all(8),
+      margin: EdgeInsets.all(8),
     ),
-
+    dialogTheme: const DialogThemeData(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(16)),
+      ),
+      elevation: 8,
+    ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -138,7 +140,6 @@ class AppTheme {
         elevation: 2,
       ),
     ),
-
     inputDecorationTheme: InputDecorationTheme(
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),

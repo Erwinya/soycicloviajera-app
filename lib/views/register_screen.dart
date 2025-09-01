@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:dio/dio.dart';
+import '../services/register_service.dart';
 // import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Şimdilik yorum satırı
 
 class RegisterScreen extends StatefulWidget {
@@ -12,7 +11,7 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _dio = Dio();
+  final RegisterService _registerService = RegisterService();
 
   // Controllers
   final _nameController = TextEditingController();
@@ -88,18 +87,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     };
 
     try {
-      // Replace with your actual backend URL
-      const baseUrl = String.fromEnvironment('BACKEND_BASE_URL', defaultValue: 'localhost:3000');
-      final response = await _dio.post(
-        'http://$baseUrl/api/traveller',
-        data: data,
-      );
-
+      final response = await _registerService.registerUser(data);
       if (response.statusCode == 204) {
         setState(() {
           _showSuccessMessage = true;
         });
-
         // Clear form after successful registration
         _formKey.currentState!.reset();
         _nameController.clear();
@@ -112,7 +104,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _selectedPreferredContact = 'EMAIL';
       }
     } catch (error) {
-      print('Error submitting form: $error');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -174,9 +165,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       // Name Field
                       TextFormField(
                         controller: _nameController,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Name', // l10n.name,
-                          border: const OutlineInputBorder(),
+                          border: OutlineInputBorder(),
                         ),
                         validator: (value) => _validateRequired(value, 'name'),
                       ),
@@ -185,11 +176,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       // Surname Field
                       TextFormField(
                         controller: _surnameController,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Surname', // l10n.surname,
-                          border: const OutlineInputBorder(),
+                          border: OutlineInputBorder(),
                         ),
-                        validator: (value) => _validateRequired(value, 'surname'),
+                        validator: (value) =>
+                            _validateRequired(value, 'surname'),
                       ),
                       const SizedBox(height: 16),
 
@@ -202,7 +194,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           border: const OutlineInputBorder(),
                           suffixIcon: IconButton(
                             icon: Icon(
-                              _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
+                              _isPasswordVisible
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
                             ),
                             onPressed: () {
                               setState(() {
@@ -211,28 +205,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             },
                           ),
                         ),
-                        validator: (value) => _validateRequired(value, 'password'),
+                        validator: (value) =>
+                            _validateRequired(value, 'password'),
                       ),
                       const SizedBox(height: 16),
 
                       // Phone Number Field
                       TextFormField(
                         controller: _phoneController,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Phone Number', // l10n.phoneNumber,
-                          border: const OutlineInputBorder(),
+                          border: OutlineInputBorder(),
                         ),
                         keyboardType: TextInputType.phone,
-                        validator: (value) => _validateRequired(value, 'phone number'),
+                        validator: (value) =>
+                            _validateRequired(value, 'phone number'),
                       ),
                       const SizedBox(height: 16),
 
                       // Email Field
                       TextFormField(
                         controller: _emailController,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Email', // l10n.email,
-                          border: const OutlineInputBorder(),
+                          border: OutlineInputBorder(),
                         ),
                         keyboardType: TextInputType.emailAddress,
                         validator: _validateEmail,
@@ -242,9 +238,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       // Telegram Field (Optional)
                       TextFormField(
                         controller: _telegramController,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Telegram', // l10n.telegram,
-                          border: const OutlineInputBorder(),
+                          border: OutlineInputBorder(),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -252,9 +248,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       // Preferred Contact Dropdown
                       DropdownButtonFormField<String>(
                         value: _selectedPreferredContact,
-                        decoration: InputDecoration(
-                          labelText: 'Preferred Contact', // l10n.preferredContact,
-                          border: const OutlineInputBorder(),
+                        decoration: const InputDecoration(
+                          labelText:
+                              'Preferred Contact', // l10n.preferredContact,
+                          border: OutlineInputBorder(),
                         ),
                         items: _contactOptions.map((String value) {
                           return DropdownMenuItem<String>(
@@ -269,16 +266,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             });
                           }
                         },
-                        validator: (value) => _validateRequired(value, 'preferred contact'),
+                        validator: (value) =>
+                            _validateRequired(value, 'preferred contact'),
                       ),
                       const SizedBox(height: 16),
 
                       // Description Field
                       TextFormField(
                         controller: _descriptionController,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Description', // l10n.registerDescription,
-                          border: const OutlineInputBorder(),
+                          border: OutlineInputBorder(),
                           alignLabelWithHint: true,
                         ),
                         maxLines: 6,
@@ -301,17 +299,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           child: _isLoading
                               ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
-                              : Text(
-                            'Sign Up', // l10n.signup,
-                            style: const TextStyle(fontSize: 16),
-                          ),
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
+                                  ),
+                                )
+                              : const Text(
+                                  'Sign Up', // l10n.signup,
+                                  style: TextStyle(fontSize: 16),
+                                ),
                         ),
                       ),
 
@@ -329,21 +328,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 width: 4,
                               ),
                             ),
-                            borderRadius: BorderRadius.circular(4),
+                            borderRadius: BorderRadius.all(Radius.circular(4)),
                           ),
-                          child: Row(
+                          child: const Row(
                             children: [
                               Icon(
                                 Icons.check_circle,
-                                color: Colors.green.shade600,
+                                color: Colors.green,
                                 size: 20,
                               ),
-                              const SizedBox(width: 8),
+                              SizedBox(width: 8),
                               Expanded(
                                 child: Text(
                                   'Registration completed successfully!', // l10n.successfulRegistrationMsg,
                                   style: TextStyle(
-                                    color: Colors.green.shade800,
+                                    color: Colors.green,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),

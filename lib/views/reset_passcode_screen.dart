@@ -1,27 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
+import '../services/reset_passcode_service.dart';
 
-class reset_passcode_screen extends StatefulWidget {
+class ResetPasscodeScreen extends StatefulWidget {
   final String? token;
 
-  const reset_passcode_screen({Key? key, this.token}) : super(key: key);
+  const ResetPasscodeScreen({Key? key, this.token}) : super(key: key);
 
   @override
-  State<reset_passcode_screen> createState() => _reset_passcode_screen();
+  State<ResetPasscodeScreen> createState() => _ResetPasscodeScreenState();
 }
 
-class _reset_passcode_screen extends State<reset_passcode_screen> {
+class _ResetPasscodeScreenState extends State<ResetPasscodeScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _dio = Dio();
-
-  // Controllers
   final _newPasscodeController = TextEditingController();
-
-  // State variables
   bool _isPasscodeVisible = false;
   bool _isLoading = false;
   bool _showSuccessMessage = false;
   bool _showErrorMessage = false;
+  final String _baseUrl =
+      'localhost:3000'; // Replace with your actual backend URL
+  late final ResetPasscodeService _resetPasscodeService;
+
+  @override
+  void initState() {
+    super.initState();
+    _resetPasscodeService = ResetPasscodeService(baseUrl: _baseUrl);
+  }
 
   @override
   void dispose() {
@@ -37,7 +41,6 @@ class _reset_passcode_screen extends State<reset_passcode_screen> {
   }
 
   Future<void> _resetPasscode() async {
-    // Reset messages
     setState(() {
       _showErrorMessage = false;
       _showSuccessMessage = false;
@@ -55,17 +58,10 @@ class _reset_passcode_screen extends State<reset_passcode_screen> {
     });
 
     try {
-      // Replace with your actual backend URL
-      const baseUrl = String.fromEnvironment('BACKEND_BASE_URL', defaultValue: 'localhost:3000');
-
-      final response = await _dio.post(
-        'http://$baseUrl/api/reset-passcode/${widget.token}',
-        data: '', // empty body
-        queryParameters: {
-          'passcode': _newPasscodeController.text,
-        },
+      final response = await _resetPasscodeService.resetPasscode(
+        token: widget.token!,
+        passcode: _newPasscodeController.text,
       );
-
       if (response.statusCode == 204) {
         setState(() {
           _showSuccessMessage = true;
@@ -77,7 +73,6 @@ class _reset_passcode_screen extends State<reset_passcode_screen> {
         });
       }
     } catch (error) {
-      print('Error resetting passcode: $error');
       setState(() {
         _showErrorMessage = true;
       });
@@ -139,7 +134,9 @@ class _reset_passcode_screen extends State<reset_passcode_screen> {
                           border: const OutlineInputBorder(),
                           suffixIcon: IconButton(
                             icon: Icon(
-                              _isPasscodeVisible ? Icons.visibility_off : Icons.visibility,
+                              _isPasscodeVisible
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
                             ),
                             onPressed: () {
                               setState(() {
@@ -148,7 +145,8 @@ class _reset_passcode_screen extends State<reset_passcode_screen> {
                             },
                           ),
                         ),
-                        validator: (value) => _validateRequired(value, 'new passcode'),
+                        validator: (value) =>
+                            _validateRequired(value, 'new passcode'),
                       ),
                       const SizedBox(height: 24),
 
@@ -167,17 +165,18 @@ class _reset_passcode_screen extends State<reset_passcode_screen> {
                           ),
                           child: _isLoading
                               ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
+                                  ),
+                                )
                               : const Text(
-                            'Reset Passcode', // resetPasscode
-                            style: TextStyle(fontSize: 16),
-                          ),
+                                  'Reset Passcode', // resetPasscode
+                                  style: TextStyle(fontSize: 16),
+                                ),
                         ),
                       ),
 

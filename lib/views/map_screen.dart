@@ -1,23 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:http/http.dart' as http;
+import '../services/map_service.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class Map extends StatefulWidget {
-  const Map({Key? key}) : super(key: key);
+class MapScreen extends StatefulWidget {
+  const MapScreen({Key? key}) : super(key: key);
 
   @override
-  State<Map> createState() => _MapPageState();
+  State<MapScreen> createState() => _MapScreenState();
 }
 
-class _MapPageState extends State<Map> {
+class _MapScreenState extends State<MapScreen> {
   final MapController _mapController = MapController();
   List<Map<String, dynamic>> _locations = [];
   bool _updateDialog = false;
   String _selectedLocale = 'tr';
-
   Map<String, dynamic> _user = {
     'name': 'Sandra Adams',
     'email': 'sandra_a88@gmail.com',
@@ -25,25 +24,25 @@ class _MapPageState extends State<Map> {
     'preferredContact': 'EMAIL',
     'contact': 'sandra_a88@gmail.com'
   };
-
   Map<String, dynamic> _updatedUser = {};
-
   final List<Map<String, dynamic>> _contactOptions = [
     {'text': 'Email', 'value': 'EMAIL'},
     {'text': 'Phone', 'value': 'PHONE'},
     {'text': 'WhatsApp', 'value': 'WHATSAPP'}
   ];
-
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _contactController = TextEditingController();
   String _selectedContactMethod = 'EMAIL';
+  final String _baseUrl = 'localhost:8080'; // Replace with your actual backend URL
+  late final MapService _mapService;
 
   @override
   void initState() {
     super.initState();
     _loadLocale();
+    _mapService = MapService(baseUrl: _baseUrl);
     _checkAuthAndLoadData();
   }
 
@@ -124,31 +123,17 @@ class _MapPageState extends State<Map> {
   Future<void> _checkAuthAndLoadData() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('accessToken');
-
     if (token == null) {
       Navigator.pushReplacementNamed(context, '/login');
       return;
     }
-
     try {
-      final response = await http.get(
-        Uri.parse('http://localhost:8080/api/locations'),
-        headers: {
-          'accept': '*/*',
-          'X-Token': token,
-        },
-      );
-
-      if (!response.statusCode.toString().startsWith('2')) {
-        throw Exception('Failed to fetch locations');
-      }
-
+      final locations = await _mapService.fetchLocations(token);
       setState(() {
-        _locations = List<Map<String, dynamic>>.from(jsonDecode(response.body));
+        _locations = locations;
       });
     } catch (error) {
-      print('Error: $error');
-      // Optional: Show error to user
+      // Error loading locations
     }
   }
 
@@ -175,33 +160,21 @@ class _MapPageState extends State<Map> {
   Future<void> _updateProfile() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('accessToken');
-
     if (token == null) {
       Navigator.pushReplacementNamed(context, '/login');
       return;
     }
-
     try {
-      final response = await http.patch(
-        Uri.parse('http://localhost:8080/api/traveller'),
-        headers: {
-          'accept': '*/*',
-          'X-Token': token,
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'name': _nameController.text,
-          'email': _emailController.text,
-          'travelerDescription': _descriptionController.text,
-          'preferredContact': _selectedContactMethod,
-          'contact': _contactController.text,
-        }),
-      );
-
-      if (!response.statusCode.toString().startsWith('2')) {
+      final success = await _mapService.updateProfile(token, {
+        'name': _nameController.text,
+        'email': _emailController.text,
+        'travelerDescription': _descriptionController.text,
+        'preferredContact': _selectedContactMethod,
+        'contact': _contactController.text,
+      });
+      if (!success) {
         throw Exception('Update failed');
       }
-
       setState(() {
         _user = {
           'name': _nameController.text,
@@ -212,12 +185,10 @@ class _MapPageState extends State<Map> {
         };
         _updateDialog = false;
       });
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(_t('profileUpdated'))),
       );
     } catch (error) {
-      print('Error updating profile: $error');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Update failed: $error')),
       );
@@ -227,7 +198,8 @@ class _MapPageState extends State<Map> {
   List<Marker> _buildMarkers() {
     return _locations.map((location) {
       return Marker(
-        point: LatLng(location['latitude'].toDouble(), location['longitude'].toDouble()),
+        point: LatLng(
+            location['latitude'].toDouble(), location['longitude'].toDouble()),
         width: 80,
         height: 80,
         child: GestureDetector(
@@ -321,7 +293,8 @@ class _MapPageState extends State<Map> {
     );
   }
 
-  Future<void> _updateLocationDescription(double latitude, double longitude, String newDescription) async {
+  Future<void> _updateLocationDescription(
+      double latitude, double longitude, String newDescription) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('accessToken');
 
@@ -352,8 +325,8 @@ class _MapPageState extends State<Map> {
 
       // Update local data
       setState(() {
-        final locationIndex = _locations.indexWhere((l) =>
-        l['latitude'] == latitude && l['longitude'] == longitude);
+        final locationIndex = _locations.indexWhere(
+            (l) => l['latitude'] == latitude && l['longitude'] == longitude);
         if (locationIndex != -1) {
           _locations[locationIndex]['locationDescription'] = newDescription;
         }
@@ -363,7 +336,7 @@ class _MapPageState extends State<Map> {
         const SnackBar(content: Text('Location updated successfully')),
       );
     } catch (error) {
-      print('Error updating location: $error');
+      // Error updating location
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Update failed: $error')),
       );
@@ -373,83 +346,87 @@ class _MapPageState extends State<Map> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Row(
-        children: [
-          // Navigation Drawer (Sidebar)
-          Container(
-            width: 280,
-            color: Colors.grey.shade100,
-            child: Column(
+      body: _updateDialog
+          ? _buildUpdateDialog()
+          : Row(
               children: [
-                // Profile Section
+                // Navigation Drawer (Sidebar)
                 Container(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
+                  width: 280,
+                  color: Colors.grey.shade100,
+                  child: Column(
                     children: [
-                      CircleAvatar(
-                        radius: 20,
-                        backgroundImage: AssetImage('assets/images/cicloviajera-color-2.png'),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      // Profile Section
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
                           children: [
-                            Text(
-                              _user['name'] ?? 'Sandra Adams',
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            const CircleAvatar(
+                              radius: 20,
+                              backgroundImage: AssetImage(
+                                  'assets/images/cicloviajera-color-2.png'),
                             ),
-                            Text(
-                              _user['email'] ?? 'sandra_a88@gmail.com',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey.shade600,
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _user['name'] ?? 'Sandra Adams',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(
+                                    _user['email'] ?? 'sandra_a88@gmail.com',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
                       ),
+                      const Divider(),
+                      // Navigation Items
+                      ListTile(
+                        leading: const Icon(Icons.account_circle),
+                        title: Text(_t('updateProfile')),
+                        onTap: _openUpdateDialog,
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.logout),
+                        title: Text(_t('logout')),
+                        onTap: _logout,
+                      ),
                     ],
                   ),
                 ),
-                const Divider(),
-                // Navigation Items
-                ListTile(
-                  leading: const Icon(Icons.account_circle),
-                  title: Text(_t('updateProfile')),
-                  onTap: _openUpdateDialog,
-                ),
-                ListTile(
-                  leading: const Icon(Icons.logout),
-                  title: Text(_t('logout')),
-                  onTap: _logout,
-                ),
-              ],
-            ),
-          ),
-          // Main Content Area (Map)
-          Expanded(
-            child: FlutterMap(
-              mapController: _mapController,
-              options: const MapOptions(
-                initialCenter: LatLng(40.0637, -3.7492), // Spain coordinates
-                initialZoom: 7.0,
-              ),
-              children: [
-                TileLayer(
-                  urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  userAgentPackageName: 'com.example.app',
-                ),
-                MarkerLayer(
-                  markers: _buildMarkers(),
+                // Main Content Area (Map)
+                Expanded(
+                  child: FlutterMap(
+                    mapController: _mapController,
+                    options: const MapOptions(
+                      initialCenter:
+                          LatLng(40.0637, -3.7492), // Spain coordinates
+                      initialZoom: 7.0,
+                    ),
+                    children: [
+                      TileLayer(
+                        urlTemplate:
+                            'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        userAgentPackageName: 'com.example.app',
+                      ),
+                      MarkerLayer(
+                        markers: _buildMarkers(),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-      // Update Profile Dialog
-      body: _updateDialog ? _buildUpdateDialog() : null,
     );
   }
 

@@ -1,0 +1,21 @@
+{
+  "appTitle": "Viajeras",
+  "welcome_message": "Welcome",
+  "description": "Description",
+  "change_language": "Change Language",
+  "updateProfile": "Update Profile",
+  "logout": "Logout",
+  "cancel": "Cancel",
+  "save": "Save",
+  "owner": "Owner",
+  "about": "About",
+  "offer": "Offer",
+  "updateLocation": "Update Location",
+  "cancelUpdateLocation": "Cancel",
+  "profileUpdated": "Profile updated successfully",
+  "name": "Name",
+  "email": "Email",
+  "aboutMe": "About Me",
+  "preferredContact": "Preferred Contact Method",
+  "contactInfo": "Contact Info"
+}

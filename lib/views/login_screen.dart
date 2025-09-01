@@ -1,9 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import '../services/login_service.dart';
 import 'dart:convert';
-import 'dart:io'; // For Platform.isIOS or Platform.isAndroid if needed for base URL, or just for general IO
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Login extends StatefulWidget {
@@ -20,15 +19,10 @@ class _LoginPageState extends State<Login> {
   bool _isLoading = false;
   String _errorMessage = '';
   String _selectedLocale = 'tr'; // Default locale
-
-  // For local development, you might use '10.0.2.2' for Android emulator accessing localhost
-  // For iOS simulator accessing localhost, use 'localhost' or '127.0.0.1'
-  // For a deployed backend, use its actual domain name.
-  // IMPORTANT: USE HTTPS for production or any sensitive data transfer.
-  static const String _yourBackendDomain = 'YOUR_BACKEND_BASE_URL'; // E.g., 'api.example.com' OR for local dev '10.0.2.2:3000'
-  static const bool _isProduction = bool.fromEnvironment('dart.vm.product'); // Or your own way to determine environment
-  final String _baseUrl = _isProduction ? 'https://$_yourBackendDomain' : 'http://$_yourBackendDomain';
-
+  late final LoginService _loginService;
+  final String _yourBackendDomain = 'YOUR_BACKEND_BASE_URL';
+  final bool _isProduction = bool.fromEnvironment('dart.vm.product');
+  late final String _baseUrl;
 
   final List<String> _languageCodes = ['es', 'en', 'tr'];
   final Map<String, String> _languageLabels = {
@@ -40,10 +34,13 @@ class _LoginPageState extends State<Login> {
   @override
   void initState() {
     super.initState();
-    _loadSelectedLocale(); // Renamed for clarity
-    // Schedule _checkIfLoggedIn to run after the first frame to ensure context is available for navigation
+    _baseUrl = _isProduction
+        ? 'https://$_yourBackendDomain'
+        : 'http://$_yourBackendDomain';
+    _loginService = LoginService(baseUrl: _baseUrl);
+    _loadSelectedLocale();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) { // Check if the widget is still in the tree
+      if (mounted) {
         _checkIfLoggedIn();
       }
     });
@@ -58,9 +55,10 @@ class _LoginPageState extends State<Login> {
 
   Future<void> _loadSelectedLocale() async {
     final prefs = await SharedPreferences.getInstance();
-    if (mounted) { // Check if the widget is still in the tree
+    if (mounted) {
       setState(() {
-        _selectedLocale = prefs.getString('locale') ?? 'tr'; // Default to 'tr' if no locale is saved
+        _selectedLocale = prefs.getString('locale') ??
+            'tr'; // Default to 'tr' if no locale is saved
       });
     }
   }
@@ -70,8 +68,8 @@ class _LoginPageState extends State<Login> {
     final accessToken = prefs.getString('accessToken');
 
     if (accessToken != null && accessToken.isNotEmpty) {
-      if (mounted) { // Check before navigating
-         Navigator.pushReplacementNamed(context, '/map');
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/map');
       }
     }
   }
@@ -121,11 +119,13 @@ class _LoginPageState extends State<Login> {
         'signup': 'Registrarse',
         'fillAllFields': 'Por favor llene todos los campos',
         'invalidCredentials': 'Email o contraseña inválidos',
-        'loginFailedGeneric': 'Error al iniciar sesión. Por favor, inténtelo de nuevo.',
+        'loginFailedGeneric':
+            'Error al iniciar sesión. Por favor, inténtelo de nuevo.',
         'errorConnecting': 'Error al conectar con el servidor.',
       },
     };
-    return translations[_selectedLocale]?[key] ?? key; // Fallback to key if translation is missing
+    return translations[_selectedLocale]?[key] ??
+        key; // Fallback to key if translation is missing
   }
 
   Future<void> _login() async {
@@ -146,29 +146,15 @@ class _LoginPageState extends State<Login> {
     }
 
     try {
-      // **IMPORTANT**: Your backend should have a specific endpoint for login, e.g., /api/auth/login or /api/traveller/login
-      // This endpoint MUST accept POST requests.
-      final url = Uri.parse('$_baseUrl/api/traveller/login'); // ADJUST YOUR LOGIN ENDPOINT HERE
+      final result = await _loginService.login(
+          _emailController.text, _passwordController.text);
+      final statusCode = result['statusCode'];
+      final data = jsonDecode(result['body']);
 
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json; charset=UTF-8',
-          'Accept': 'application/json',
-        },
-        body: jsonEncode(<String, String>{
-          'email': _emailController.text,
-          'passcode': _passwordController.text, // Ensure your backend expects 'passcode'
-        }),
-      ).timeout(const Duration(seconds: 15)); // Add a timeout
-
-      final data = jsonDecode(response.body);
-
-      if (response.statusCode == 200 || response.statusCode == 201) { // Typically 200 or 201 for successful login
+      if (statusCode == 200 || statusCode == 201) {
         if (data['accessToken'] != null) {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('accessToken', data['accessToken']);
-
           if (data['user'] != null) {
             await prefs.setString('user', jsonEncode(data['user']));
           }
@@ -176,41 +162,24 @@ class _LoginPageState extends State<Login> {
             Navigator.pushReplacementNamed(context, '/map');
           }
         } else {
-          // Access token is missing in a 200/201 response, which is unexpected
-           throw Exception(_t('loginFailedGeneric'));
+          throw Exception(_t('loginFailedGeneric'));
         }
-      } else if (response.statusCode == 401 || response.statusCode == 400) { // 401 for unauthorized, 400 for bad request (e.g. validation)
-        // Try to get a message from backend, otherwise show specific message
-        final message = data['message'] ?? (response.statusCode == 401 ? _t('invalidCredentials') : _t('loginFailedGeneric'));
+      } else if (statusCode == 401 || statusCode == 400) {
+        final message = data['message'] ??
+            (statusCode == 401
+                ? _t('invalidCredentials')
+                : _t('loginFailedGeneric'));
         throw Exception(message);
+      } else {
+        throw Exception('${_t('loginFailedGeneric')} (Status: $statusCode)');
       }
-      else {
-        // Handle other status codes (500, 404, etc.)
-        throw Exception(_t('loginFailedGeneric') + ' (Status: ${response.statusCode})');
-      }
-
-    } on SocketException { // Catch no internet or server down
-        if (mounted) {
-          setState(() {
-            _errorMessage = _t('errorConnecting');
-          });
-        }
-    } on TimeoutException { // Catch request timeout
-        if (mounted) {
-          setState(() {
-            _errorMessage = _t('errorConnecting') + " (Timeout)";
-          });
-        }
-    }
-    catch (error) {
+    } on Exception catch (error) {
       if (mounted) {
         setState(() {
-          // Use the error message directly if it's already a string, or convert
-          _errorMessage = error is String ? error : error.toString().replaceFirst('Exception: ', '');
-          // Specific check for invalid credentials if backend sends a known message within the error string
-          // This might be redundant if status code 401 is handled above cleanly.
-          if (_errorMessage.toLowerCase().contains('invalid') || _errorMessage.toLowerCase().contains('unauthorized')) {
-             _errorMessage = _t('invalidCredentials');
+          _errorMessage = error.toString().replaceFirst('Exception: ', '');
+          if (_errorMessage.toLowerCase().contains('invalid') ||
+              _errorMessage.toLowerCase().contains('unauthorized')) {
+            _errorMessage = _t('invalidCredentials');
           }
         });
       }
@@ -231,12 +200,14 @@ class _LoginPageState extends State<Login> {
         height: double.infinity,
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/hero-banner.png'), // Ensure this asset exists
+            image: AssetImage(
+                'assets/images/hero-banner.png'), // Ensure this asset exists
             fit: BoxFit.cover,
           ),
         ),
         child: Center(
-          child: SingleChildScrollView( // Added SingleChildScrollView to prevent overflow on small screens
+          child: SingleChildScrollView(
+            // Added SingleChildScrollView to prevent overflow on small screens
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Container(
               constraints: const BoxConstraints(maxWidth: 400),
@@ -295,7 +266,9 @@ class _LoginPageState extends State<Login> {
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.error_outline, color: Colors.red.shade600, size: 20), // Changed to outline
+                              Icon(Icons.error_outline,
+                                  color: Colors.red.shade600,
+                                  size: 20), // Changed to outline
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
@@ -321,7 +294,8 @@ class _LoginPageState extends State<Login> {
                           contentPadding: const EdgeInsets.all(12),
                         ),
                         keyboardType: TextInputType.emailAddress,
-                        textInputAction: TextInputAction.next, // For better keyboard navigation
+                        textInputAction: TextInputAction
+                            .next, // For better keyboard navigation
                       ),
 
                       // Password label and forgot password
@@ -340,7 +314,8 @@ class _LoginPageState extends State<Login> {
                             ),
                             GestureDetector(
                               onTap: () {
-                                Navigator.pushNamed(context, '/forgot-passcode');
+                                Navigator.pushNamed(
+                                    context, '/forgot-passcode');
                               },
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -374,7 +349,10 @@ class _LoginPageState extends State<Login> {
                           prefixIcon: const Icon(Icons.lock_outline),
                           suffixIcon: IconButton(
                             icon: Icon(
-                              _visible ? Icons.visibility_off_outlined : Icons.visibility_outlined, // Changed to outlined
+                              _visible
+                                  ? Icons.visibility_off_outlined
+                                  : Icons
+                                      .visibility_outlined, // Changed to outlined
                             ),
                             onPressed: () {
                               if (mounted) {
@@ -388,23 +366,29 @@ class _LoginPageState extends State<Login> {
                           isDense: true,
                           contentPadding: const EdgeInsets.all(12),
                         ),
-                         keyboardType: TextInputType.visiblePassword,
-                         textInputAction: TextInputAction.done, // For submitting form
-                         onSubmitted: (_) => _isLoading ? null : _login(), // Allow login on keyboard done
+                        keyboardType: TextInputType.visiblePassword,
+                        textInputAction:
+                            TextInputAction.done, // For submitting form
+                        onSubmitted: (_) => _isLoading
+                            ? null
+                            : _login(), // Allow login on keyboard done
                       ),
 
                       // Login button
                       Container(
                         width: double.infinity,
-                        margin: const EdgeInsets.fromLTRB(0, 24, 0, 24), // Increased top margin
+                        margin: const EdgeInsets.fromLTRB(
+                            0, 24, 0, 24), // Increased top margin
                         child: ElevatedButton(
                           onPressed: _isLoading ? null : _login,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue.shade600, // Slightly darker blue for better contrast
+                            backgroundColor: Colors.blue
+                                .shade600, // Slightly darker blue for better contrast
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8), // Slightly more rounded
+                              borderRadius: BorderRadius.circular(
+                                  8), // Slightly more rounded
                             ),
                             elevation: 2, // Added subtle elevation
                           ),
@@ -414,7 +398,8 @@ class _LoginPageState extends State<Login> {
                                   width: 20,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
                                   ),
                                 )
                               : Text(
@@ -430,7 +415,8 @@ class _LoginPageState extends State<Login> {
                       // Sign up link
                       Container(
                         width: double.infinity,
-                        margin: const EdgeInsets.only(bottom: 16), // Increased bottom margin
+                        margin: const EdgeInsets.only(
+                            bottom: 16), // Increased bottom margin
                         child: Center(
                           child: GestureDetector(
                             onTap: () {
@@ -438,13 +424,15 @@ class _LoginPageState extends State<Login> {
                             },
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.center, // Center the row content
+                              mainAxisAlignment: MainAxisAlignment
+                                  .center, // Center the row content
                               children: [
                                 Text(
                                   _t('signup'),
                                   style: const TextStyle(
                                     color: Colors.blue,
-                                    fontWeight: FontWeight.w500, // Slightly bolder
+                                    fontWeight:
+                                        FontWeight.w500, // Slightly bolder
                                     decoration: TextDecoration.none,
                                   ),
                                 ),
@@ -460,39 +448,48 @@ class _LoginPageState extends State<Login> {
                       ),
 
                       // Language buttons
-                      if (_languageCodes.length > 1) // Only show if there's more than one language
+                      if (_languageCodes.length >
+                          1) // Only show if there's more than one language
                         Container(
                           margin: const EdgeInsets.only(top: 16),
                           child: Row(
                             children: _languageCodes.map((code) {
                               return Expanded(
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 2),
                                   child: OutlinedButton(
                                     onPressed: () => _changeLang(code),
                                     style: OutlinedButton.styleFrom(
                                       backgroundColor: _selectedLocale == code
-                                          ? Colors.blue.shade50 // Lighter blue for selection
+                                          ? Colors.blue
+                                              .shade50 // Lighter blue for selection
                                           : Colors.transparent,
                                       foregroundColor: _selectedLocale == code
                                           ? Colors.blue.shade700
-                                          : Colors.black54, // Greyer for unselected
+                                          : Colors
+                                              .black54, // Greyer for unselected
                                       side: BorderSide(
                                         color: _selectedLocale == code
                                             ? Colors.blue.shade300
                                             : Colors.grey.shade300,
                                       ),
-                                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4), // Adjusted padding
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 10,
+                                          horizontal: 4), // Adjusted padding
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                     ),
                                     child: Text(
-                                      _languageLabels[code] ?? code.toUpperCase(),
+                                      _languageLabels[code] ??
+                                          code.toUpperCase(),
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         fontSize: 11, // Slightly smaller
-                                        fontWeight: _selectedLocale == code ? FontWeight.bold : FontWeight.normal,
+                                        fontWeight: _selectedLocale == code
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
                                       ),
                                     ),
                                   ),

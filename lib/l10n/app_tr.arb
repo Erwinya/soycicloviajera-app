@@ -1,0 +1,21 @@
+{
+  "appTitle": "Viajeras",
+  "welcome_message": "Hoşgeldiniz",
+  "description": "Açıklama",
+  "change_language": "Dili Değiştir",
+  "updateProfile": "Profili Güncelle",
+  "logout": "Çıkış Yap",
+  "cancel": "İptal",
+  "save": "Kaydet",
+  "owner": "Sahip",
+  "about": "Hakkında",
+  "offer": "Teklif",
+  "updateLocation": "Konumu Güncelle",
+  "cancelUpdateLocation": "İptal",
+  "profileUpdated": "Profil başarıyla güncellendi",
+  "name": "İsim",
+  "email": "Email",
+  "aboutMe": "Hakkımda",
+  "preferredContact": "Tercih Edilen İletişim",
+  "contactInfo": "İletişim Bilgisi"
+}
