@@ -2,6 +2,27 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class MapService {
+  Future<void> updateLocationDescription(String token, double latitude,
+      double longitude, String newDescription) async {
+    final response = await http.patch(
+      Uri.parse('http://$baseUrl/api/locations'),
+      headers: {
+        'accept': '*/*',
+        'X-Token': token,
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'description': newDescription,
+        'latitude': latitude,
+        'longitude': longitude,
+      }),
+    );
+    if (!response.statusCode.toString().startsWith('2')) {
+      final errorData = jsonDecode(response.body);
+      throw Exception(errorData['message'] ?? 'Update failed');
+    }
+  }
+
   final String baseUrl;
   MapService({required this.baseUrl});
 

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../services/map_service.dart';
-import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MapScreen extends StatefulWidget {
@@ -35,7 +34,8 @@ class _MapScreenState extends State<MapScreen> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _contactController = TextEditingController();
   String _selectedContactMethod = 'EMAIL';
-  final String _baseUrl = 'localhost:8080'; // Replace with your actual backend URL
+  final String _baseUrl =
+      'localhost:8080'; // Replace with your actual backend URL
   late final MapService _mapService;
 
   @override
@@ -297,32 +297,15 @@ class _MapScreenState extends State<MapScreen> {
       double latitude, double longitude, String newDescription) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('accessToken');
-
+    if (!mounted) return;
     if (token == null) {
       Navigator.pushReplacementNamed(context, '/login');
       return;
     }
-
     try {
-      final response = await http.patch(
-        Uri.parse('http://localhost:8080/api/locations'),
-        headers: {
-          'accept': '*/*',
-          'X-Token': token,
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'description': newDescription,
-          'latitude': latitude,
-          'longitude': longitude,
-        }),
-      );
-
-      if (!response.statusCode.toString().startsWith('2')) {
-        final errorData = jsonDecode(response.body);
-        throw Exception(errorData['message'] ?? 'Update failed');
-      }
-
+      await _mapService.updateLocationDescription(
+          token, latitude, longitude, newDescription);
+      if (!mounted) return;
       // Update local data
       setState(() {
         final locationIndex = _locations.indexWhere(
@@ -331,11 +314,11 @@ class _MapScreenState extends State<MapScreen> {
           _locations[locationIndex]['locationDescription'] = newDescription;
         }
       });
-
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Location updated successfully')),
       );
     } catch (error) {
+      if (!mounted) return;
       // Error updating location
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Update failed: $error')),

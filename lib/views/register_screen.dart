@@ -320,17 +320,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.green.shade50,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFE8F5E9),
                             border: Border(
                               left: BorderSide(
-                                color: Colors.green.shade400,
+                                color: Color(0xFF66BB6A),
                                 width: 4,
                               ),
                             ),
                             borderRadius: BorderRadius.all(Radius.circular(4)),
                           ),
-                          child: const Row(
+                          child: Row(
                             children: [
                               Icon(
                                 Icons.check_circle,

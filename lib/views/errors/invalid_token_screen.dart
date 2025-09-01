@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import '../../services/token_validation_service.dart';
 
 class InvalidTokenScreen extends StatefulWidget {
   final String? token;
@@ -12,9 +11,14 @@ class InvalidTokenScreen extends StatefulWidget {
 }
 
 class _InvalidTokenScreenState extends State<InvalidTokenScreen> {
+  final String _baseUrl =
+      'localhost:3000'; // Replace with your actual backend URL
+  late final TokenValidationService _tokenValidationService;
+
   @override
   void initState() {
     super.initState();
+    _tokenValidationService = TokenValidationService(baseUrl: _baseUrl);
     _validateToken();
   }
 
@@ -23,25 +27,13 @@ class _InvalidTokenScreenState extends State<InvalidTokenScreen> {
       setState(() {});
       return;
     }
-
-    // Environment variable'dan base URL'i alın
-    const String baseUrl = String.fromEnvironment('BACKEND_BASE_URL',
-        defaultValue: 'localhost:3000'); // varsayılan değer
-
     try {
-      final response = await http.get(Uri.parse(
-          'http://$baseUrl/api/validate-reset-token?token=${widget.token}'));
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['valid'] == true) {
-          // Reset passcode sayfasına yönlendir
-          if (mounted) {
-            Navigator.pushReplacementNamed(context, '/reset-passcode',
-                arguments: {'token': widget.token});
-          }
-        } else {
-          setState(() {});
+      final isValid =
+          await _tokenValidationService.validateToken(widget.token!);
+      if (isValid) {
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/reset-passcode',
+              arguments: {'token': widget.token});
         }
       } else {
         setState(() {});
@@ -120,9 +112,9 @@ class _InvalidTokenScreenState extends State<InvalidTokenScreen> {
                                   ),
                                 ),
                               ),
-                              child: const Padding(
-                                padding: EdgeInsets.all(16.0),
-                                child: const Row(
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Row(
                                   children: [
                                     Icon(
                                       Icons.error,

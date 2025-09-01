@@ -24,8 +24,8 @@ class _LoginPageState extends State<Login> {
   final bool _isProduction = bool.fromEnvironment('dart.vm.product');
   late final String _baseUrl;
 
-  final List<String> _languageCodes = ['es', 'en', 'tr'];
-  final Map<String, String> _languageLabels = {
+  final List<String> _languageCodes = const ['es', 'en', 'tr'];
+  final Map<String, String> _languageLabels = const {
     'es': 'Español',
     'en': 'English',
     'tr': 'Türkçe',
