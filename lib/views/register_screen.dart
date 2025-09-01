@@ -131,7 +131,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         height: double.infinity,
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/hero-banner.png'),
+            image: AssetImage('lib/assets/images/hero-banner.png'),
             fit: BoxFit.cover,
           ),
         ),

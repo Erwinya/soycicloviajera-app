@@ -55,7 +55,7 @@ class _InvalidTokenScreenState extends State<InvalidTokenScreen> {
         height: double.infinity,
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/hero-banner.png'),
+            image: AssetImage('lib/assets/images/hero-banner.png'),
             fit: BoxFit.cover,
           ),
         ),
@@ -84,7 +84,7 @@ class _InvalidTokenScreenState extends State<InvalidTokenScreen> {
                           constraints: const BoxConstraints(maxWidth: 180),
                           margin: const EdgeInsets.only(top: 8, bottom: 16),
                           child: Image.asset(
-                            'assets/cicloviajera-color-2.png',
+                            'lib/assets/images/cicloviajera-color-2.png',
                             fit: BoxFit.contain,
                           ),
                         ),

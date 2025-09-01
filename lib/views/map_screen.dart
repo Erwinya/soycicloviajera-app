@@ -329,87 +329,97 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _updateDialog
-          ? _buildUpdateDialog()
-          : Row(
-              children: [
-                // Navigation Drawer (Sidebar)
-                Container(
-                  width: 280,
-                  color: Colors.grey.shade100,
-                  child: Column(
-                    children: [
-                      // Profile Section
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
-                          children: [
-                            const CircleAvatar(
-                              radius: 20,
-                              backgroundImage: AssetImage(
-                                  'assets/images/cicloviajera-color-2.png'),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    _user['name'] ?? 'Sandra Adams',
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  Text(
-                                    _user['email'] ?? 'sandra_a88@gmail.com',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                  ),
-                                ],
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('lib/assets/images/hero-banner.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: _updateDialog
+            ? _buildUpdateDialog()
+            : Row(
+                children: [
+                  // Navigation Drawer (Sidebar)
+                  Container(
+                    width: 280,
+                    color: Colors.grey.shade100,
+                    child: Column(
+                      children: [
+                        // Profile Section
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          child: Row(
+                            children: [
+                              const CircleAvatar(
+                                radius: 20,
+                                backgroundImage: AssetImage(
+                                    'lib/assets/images/cicloviajera-color-2.png'),
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _user['name'] ?? 'Sandra Adams',
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    Text(
+                                      _user['email'] ?? 'sandra_a88@gmail.com',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const Divider(),
-                      // Navigation Items
-                      ListTile(
-                        leading: const Icon(Icons.account_circle),
-                        title: Text(_t('updateProfile')),
-                        onTap: _openUpdateDialog,
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.logout),
-                        title: Text(_t('logout')),
-                        onTap: _logout,
-                      ),
-                    ],
-                  ),
-                ),
-                // Main Content Area (Map)
-                Expanded(
-                  child: FlutterMap(
-                    mapController: _mapController,
-                    options: const MapOptions(
-                      initialCenter:
-                          LatLng(40.0637, -3.7492), // Spain coordinates
-                      initialZoom: 7.0,
+                        const Divider(),
+                        // Navigation Items
+                        ListTile(
+                          leading: const Icon(Icons.account_circle),
+                          title: Text(_t('updateProfile')),
+                          onTap: _openUpdateDialog,
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.logout),
+                          title: Text(_t('logout')),
+                          onTap: _logout,
+                        ),
+                      ],
                     ),
-                    children: [
-                      TileLayer(
-                        urlTemplate:
-                            'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        userAgentPackageName: 'com.example.app',
-                      ),
-                      MarkerLayer(
-                        markers: _buildMarkers(),
-                      ),
-                    ],
                   ),
-                ),
-              ],
-            ),
+                  // Main Content Area (Map)
+                  Expanded(
+                    child: FlutterMap(
+                      mapController: _mapController,
+                      options: const MapOptions(
+                        initialCenter:
+                            LatLng(40.0637, -3.7492), // Spain coordinates
+                        initialZoom: 7.0,
+                      ),
+                      children: [
+                        TileLayer(
+                          urlTemplate:
+                              'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          userAgentPackageName: 'com.example.app',
+                        ),
+                        MarkerLayer(
+                          markers: _buildMarkers(),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+      ),
     );
   }
 

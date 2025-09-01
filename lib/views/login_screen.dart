@@ -18,7 +18,7 @@ class _LoginPageState extends State<Login> {
   bool _visible = false;
   bool _isLoading = false;
   String _errorMessage = '';
-  String _selectedLocale = 'tr'; // Default locale
+  String _selectedLocale = 'en'; // Default locale artık İngilizce
   late final LoginService _loginService;
   final String _yourBackendDomain = 'YOUR_BACKEND_BASE_URL';
   final bool _isProduction = bool.fromEnvironment('dart.vm.product');
@@ -55,10 +55,10 @@ class _LoginPageState extends State<Login> {
 
   Future<void> _loadSelectedLocale() async {
     final prefs = await SharedPreferences.getInstance();
+    final savedLocale = prefs.getString('locale');
     if (mounted) {
       setState(() {
-        _selectedLocale = prefs.getString('locale') ??
-            'tr'; // Default to 'tr' if no locale is saved
+        _selectedLocale = savedLocale ?? 'en'; // Default to 'en' if no locale is saved
       });
     }
   }
@@ -201,7 +201,7 @@ class _LoginPageState extends State<Login> {
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage(
-                'assets/images/hero-banner.png'), // Ensure this asset exists
+                'lib/assets/images/hero-banner.png'), // Ensure this asset exists
             fit: BoxFit.cover,
           ),
         ),
@@ -234,7 +234,7 @@ class _LoginPageState extends State<Login> {
                           constraints: const BoxConstraints(maxWidth: 180),
                           margin: const EdgeInsets.fromLTRB(0, 16, 0, 16),
                           child: Image.asset(
-                            'assets/images/cicloviajera-color-2.png', // Ensure this asset exists
+                            'lib/assets/images/cicloviajera-color-2.png', // Ensure this asset exists
                             fit: BoxFit.contain,
                           ),
                         ),

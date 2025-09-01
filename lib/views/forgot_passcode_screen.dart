@@ -132,7 +132,7 @@ class _ForgotPasscodePageState extends State<ForgotPasscodePage> {
         height: double.infinity,
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/hero-banner.png'),
+            image: AssetImage('lib/assets/images/hero-banner.png'),
             fit: BoxFit.cover,
           ),
         ),
