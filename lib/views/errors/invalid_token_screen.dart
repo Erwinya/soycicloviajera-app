@@ -52,7 +52,7 @@ class _InvalidTokenScreenState extends State<InvalidTokenScreen> {
                       children: [
                         // Logo
                         const SizedBox(height: 8),
-                        SizedBox(
+                        const SizedBox(
                           height: 180,
                           child: Image(
                             image: AssetImage(
@@ -77,23 +77,23 @@ class _InvalidTokenScreenState extends State<InvalidTokenScreen> {
                               width: double.infinity,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border(
+                                border: const Border(
                                   left: BorderSide(
                                     color: Colors.red,
                                     width: 4,
                                   ),
                                 ),
                               ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
+                              child: const Padding(
+                                padding: EdgeInsets.all(16.0),
                                 child: Row(
                                   children: [
-                                    const Icon(
+                                    Icon(
                                       Icons.error,
                                       color: Colors.red,
                                       size: 20,
                                     ),
-                                    const SizedBox(width: 12),
+                                    SizedBox(width: 12),
                                     Expanded(
                                       child: Text(
                                         'Invalid or expired reset token.',

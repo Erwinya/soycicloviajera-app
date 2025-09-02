@@ -1,9 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import '../services/login_service.dart';
-import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../services/login_service.dart';
 
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -18,7 +19,7 @@ class _LoginPageState extends State<Login> {
   bool _visible = false;
   bool _isLoading = false;
   String _errorMessage = '';
-  String _selectedLocale = 'en'; // Default locale artık İngilizce
+  String _selectedLocale = 'en'; // Default locale
   late final LoginService _loginService;
   final String _yourBackendDomain = 'YOUR_BACKEND_BASE_URL';
   final bool _isProduction = bool.fromEnvironment('dart.vm.product');
@@ -56,33 +57,29 @@ class _LoginPageState extends State<Login> {
   Future<void> _loadSelectedLocale() async {
     final prefs = await SharedPreferences.getInstance();
     final savedLocale = prefs.getString('locale');
-    if (mounted) {
-      setState(() {
-        _selectedLocale =
-            savedLocale ?? 'en'; // Default to 'en' if no locale is saved
-      });
-    }
+    if (!mounted) return;
+    setState(() {
+      _selectedLocale = savedLocale ?? 'en';
+    });
   }
 
   Future<void> _checkIfLoggedIn() async {
     final prefs = await SharedPreferences.getInstance();
     final accessToken = prefs.getString('accessToken');
 
+    if (!mounted) return;
     if (accessToken != null && accessToken.isNotEmpty) {
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/map');
-      }
+      Navigator.pushReplacementNamed(context, '/map');
     }
   }
 
   Future<void> _changeLang(String newLang) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('locale', newLang);
-    if (mounted) {
-      setState(() {
-        _selectedLocale = newLang;
-      });
-    }
+    if (!mounted) return;
+    setState(() {
+      _selectedLocale = newLang;
+    });
   }
 
   String _t(String key) {
@@ -125,26 +122,23 @@ class _LoginPageState extends State<Login> {
         'errorConnecting': 'Error al conectar con el servidor.',
       },
     };
-    return translations[_selectedLocale]?[key] ??
-        key; // Fallback to key if translation is missing
+    return translations[_selectedLocale]?[key] ?? key;
   }
 
   Future<void> _login() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      if (mounted) {
-        setState(() {
-          _errorMessage = _t('fillAllFields');
-        });
-      }
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = _t('fillAllFields');
+      });
       return;
     }
 
-    if (mounted) {
-      setState(() {
-        _isLoading = true;
-        _errorMessage = '';
-      });
-    }
+    if (!mounted) return;
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
 
     try {
       final result = await _loginService.login(
@@ -159,9 +153,8 @@ class _LoginPageState extends State<Login> {
           if (data['user'] != null) {
             await prefs.setString('user', jsonEncode(data['user']));
           }
-          if (mounted) {
-            Navigator.pushReplacementNamed(context, '/map');
-          }
+          if (!mounted) return;
+          Navigator.pushReplacementNamed(context, '/map');
         } else {
           throw Exception(_t('loginFailedGeneric'));
         }
@@ -175,21 +168,19 @@ class _LoginPageState extends State<Login> {
         throw Exception('${_t('loginFailedGeneric')} (Status: $statusCode)');
       }
     } on Exception catch (error) {
-      if (mounted) {
-        setState(() {
-          _errorMessage = error.toString().replaceFirst('Exception: ', '');
-          if (_errorMessage.toLowerCase().contains('invalid') ||
-              _errorMessage.toLowerCase().contains('unauthorized')) {
-            _errorMessage = _t('invalidCredentials');
-          }
-        });
-      }
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = error.toString().replaceFirst('Exception: ', '');
+        if (_errorMessage.toLowerCase().contains('invalid') ||
+            _errorMessage.toLowerCase().contains('unauthorized')) {
+          _errorMessage = _t('invalidCredentials');
+        }
+      });
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -201,19 +192,16 @@ class _LoginPageState extends State<Login> {
         height: double.infinity,
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage(
-                'lib/assets/images/hero-banner.png'), // Ensure this asset exists
+            image: AssetImage('lib/assets/images/hero-banner.png'),
             fit: BoxFit.cover,
           ),
         ),
         child: Center(
           child: SingleChildScrollView(
-            // Added SingleChildScrollView to prevent overflow on small screens
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Container(
               constraints: const BoxConstraints(maxWidth: 400),
               width: double.infinity,
-              // Removed margin as padding is handled by SingleChildScrollView
               child: Card(
                 elevation: 8,
                 shape: RoundedRectangleBorder(
@@ -235,7 +223,7 @@ class _LoginPageState extends State<Login> {
                           constraints: const BoxConstraints(maxWidth: 180),
                           margin: const EdgeInsets.fromLTRB(0, 16, 0, 16),
                           child: Image.asset(
-                            'lib/assets/images/cicloviajera-color-2.png', // Ensure this asset exists
+                            'lib/assets/images/cicloviajera-color-2.png',
                             fit: BoxFit.contain,
                           ),
                         ),
@@ -261,8 +249,9 @@ class _LoginPageState extends State<Login> {
                           padding: const EdgeInsets.all(12),
                           margin: const EdgeInsets.only(bottom: 16),
                           decoration: BoxDecoration(
-                            color: Colors.red.shade50,
-                            border: Border.all(color: Colors.red.shade200),
+                            color: Colors.redAccent.withOpacity(0.1),
+                            border:
+                                Border.all(color: Colors.redAccent.shade100),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Row(
@@ -286,16 +275,15 @@ class _LoginPageState extends State<Login> {
                       // Email field
                       TextField(
                         controller: _emailController,
-                        decoration: InputDecoration(
-                          hintText: _t('email'),
-                          prefixIcon: const Icon(Icons.email_outlined),
-                          border: const OutlineInputBorder(),
+                        decoration: const InputDecoration(
+                          hintText: 'Email',
+                          prefixIcon: Icon(Icons.email_outlined),
+                          border: OutlineInputBorder(),
                           isDense: true,
-                          contentPadding: const EdgeInsets.all(12),
+                          contentPadding: EdgeInsets.all(12),
                         ),
                         keyboardType: TextInputType.emailAddress,
-                        textInputAction: TextInputAction
-                            .next, // For better keyboard navigation
+                        textInputAction: TextInputAction.next,
                       ),
 
                       // Password label and forgot password
@@ -311,31 +299,28 @@ class _LoginPageState extends State<Login> {
                                 color: Colors.black87,
                               ),
                             ),
-                            MouseRegion(
-                              cursor: SystemMouseCursors.click,
-                              child: GestureDetector(
-                                onTap: () {
-                                  Navigator.pushNamed(
-                                      context, '/forgot-passcode');
-                                },
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      _t('forgot'),
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.blue,
-                                        decoration: TextDecoration.none,
-                                      ),
-                                    ),
-                                    const Icon(
-                                      Icons.chevron_right,
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.pushNamed(
+                                    context, '/forgot-passcode');
+                              },
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    _t('forgot'),
+                                    style: const TextStyle(
+                                      fontSize: 12,
                                       color: Colors.blue,
-                                      size: 16,
+                                      decoration: TextDecoration.none,
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                  const Icon(
+                                    Icons.chevron_right,
+                                    color: Colors.blue,
+                                    size: 16,
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -353,15 +338,13 @@ class _LoginPageState extends State<Login> {
                             icon: Icon(
                               _visible
                                   ? Icons.visibility_off_outlined
-                                  : Icons
-                                      .visibility_outlined, // Changed to outlined
+                                  : Icons.visibility_outlined,
                             ),
                             onPressed: () {
-                              if (mounted) {
-                                setState(() {
-                                  _visible = !_visible;
-                                });
-                              }
+                              if (!mounted) return;
+                              setState(() {
+                                _visible = !_visible;
+                              });
                             },
                           ),
                           border: const OutlineInputBorder(),
@@ -369,30 +352,24 @@ class _LoginPageState extends State<Login> {
                           contentPadding: const EdgeInsets.all(12),
                         ),
                         keyboardType: TextInputType.visiblePassword,
-                        textInputAction:
-                            TextInputAction.done, // For submitting form
-                        onSubmitted: (_) => _isLoading
-                            ? null
-                            : _login(), // Allow login on keyboard done
+                        textInputAction: TextInputAction.done,
+                        onSubmitted: (_) => _isLoading ? null : _login(),
                       ),
 
                       // Login button
                       Container(
                         width: double.infinity,
-                        margin: const EdgeInsets.fromLTRB(
-                            0, 24, 0, 24), // Increased top margin
+                        margin: const EdgeInsets.fromLTRB(0, 24, 0, 24),
                         child: ElevatedButton(
                           onPressed: _isLoading ? null : _login,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue
-                                .shade600, // Slightly darker blue for better contrast
+                            backgroundColor: Colors.blue.shade600,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                  8), // Slightly more rounded
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            elevation: 2, // Added subtle elevation
+                            elevation: 2,
                           ),
                           child: _isLoading
                               ? const SizedBox(
@@ -408,7 +385,7 @@ class _LoginPageState extends State<Login> {
                                   _t('login'),
                                   style: const TextStyle(
                                     fontSize: 16,
-                                    fontWeight: FontWeight.bold, // Bolder text
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
                         ),
@@ -417,44 +394,37 @@ class _LoginPageState extends State<Login> {
                       // Sign up link
                       Container(
                         width: double.infinity,
-                        margin: const EdgeInsets.only(
-                            bottom: 16), // Increased bottom margin
+                        margin: const EdgeInsets.only(bottom: 16),
                         child: Center(
-                          child: MouseRegion(
-                            cursor: SystemMouseCursors.click,
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.pushNamed(context, '/register');
-                              },
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment
-                                    .center, // Center the row content
-                                children: [
-                                  Text(
-                                    _t('signup'),
-                                    style: const TextStyle(
-                                      color: Colors.blue,
-                                      fontWeight:
-                                          FontWeight.w500, // Slightly bolder
-                                      decoration: TextDecoration.none,
-                                    ),
-                                  ),
-                                  const Icon(
-                                    Icons.chevron_right,
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.pushNamed(context, '/register');
+                            },
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  _t('signup'),
+                                  style: const TextStyle(
                                     color: Colors.blue,
-                                    size: 18, // Slightly larger
+                                    fontWeight: FontWeight.w500,
+                                    decoration: TextDecoration.none,
                                   ),
-                                ],
-                              ),
+                                ),
+                                const Icon(
+                                  Icons.chevron_right,
+                                  color: Colors.blue,
+                                  size: 18,
+                                ),
+                              ],
                             ),
                           ),
                         ),
                       ),
 
                       // Language buttons
-                      if (_languageCodes.length >
-                          1) // Only show if there's more than one language
+                      if (_languageCodes.length > 1)
                         Container(
                           margin: const EdgeInsets.only(top: 16),
                           child: Row(
@@ -467,21 +437,18 @@ class _LoginPageState extends State<Login> {
                                     onPressed: () => _changeLang(code),
                                     style: OutlinedButton.styleFrom(
                                       backgroundColor: _selectedLocale == code
-                                          ? Colors.blue
-                                              .shade50 // Lighter blue for selection
+                                          ? Colors.blue.shade50
                                           : Colors.transparent,
                                       foregroundColor: _selectedLocale == code
                                           ? Colors.blue.shade700
-                                          : Colors
-                                              .black54, // Greyer for unselected
+                                          : Colors.black54,
                                       side: BorderSide(
                                         color: _selectedLocale == code
                                             ? Colors.blue.shade300
                                             : Colors.grey.shade300,
                                       ),
                                       padding: const EdgeInsets.symmetric(
-                                          vertical: 10,
-                                          horizontal: 4), // Adjusted padding
+                                          vertical: 10, horizontal: 4),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(8),
                                       ),
@@ -491,7 +458,7 @@ class _LoginPageState extends State<Login> {
                                           code.toUpperCase(),
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
-                                        fontSize: 11, // Slightly smaller
+                                        fontSize: 11,
                                         fontWeight: _selectedLocale == code
                                             ? FontWeight.bold
                                             : FontWeight.normal,
