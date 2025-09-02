@@ -66,7 +66,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _submitForm() async {
-    if (!_formKey.currentState!.validate()) {
+    if (!(_formKey.currentState?.validate() ?? false)) {
       return;
     }
 
@@ -93,7 +93,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           _showSuccessMessage = true;
         });
         // Clear form after successful registration
-        _formKey.currentState!.reset();
+        _formKey.currentState?.reset();
         _nameController.clear();
         _surnameController.clear();
         _passwordController.clear();
@@ -131,7 +131,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         height: double.infinity,
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('lib/assets/images/hero-banner.png'),
+            image: AssetImage('lib/assets/images/cicloviajera-color-2.png'),
             fit: BoxFit.cover,
           ),
         ),
@@ -325,30 +325,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             border: Border(
                               left: BorderSide(
                                 color: Color(0xFF66BB6A),
-                                width: 4,
                               ),
                             ),
-                            borderRadius: BorderRadius.all(Radius.circular(4)),
                           ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.check_circle,
-                                color: Colors.green,
-                                size: 20,
-                              ),
-                              SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'Registration completed successfully!', // l10n.successfulRegistrationMsg,
-                                  style: TextStyle(
-                                    color: Colors.green,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                          // ...other child widgets if needed...
                         ),
                       ],
                     ],

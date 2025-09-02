@@ -15,7 +15,7 @@ class _MapScreenState extends State<MapScreen> {
   final MapController _mapController = MapController();
   List<Map<String, dynamic>> _locations = [];
   bool _updateDialog = false;
-  String _selectedLocale = 'tr';
+  String _selectedLocale = 'en';
   Map<String, dynamic> _user = {
     'name': 'Sandra Adams',
     'email': 'sandra_a88@gmail.com',
@@ -58,7 +58,7 @@ class _MapScreenState extends State<MapScreen> {
   void _loadLocale() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _selectedLocale = prefs.getString('locale') ?? 'tr';
+      _selectedLocale = prefs.getString('locale') ?? 'en';
     });
   }
 

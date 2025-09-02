@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
 
@@ -28,16 +29,45 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
 
   @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  Locale? _locale;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLocale();
+  }
+
+  Future<void> _loadLocale() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedLocale = prefs.getString('locale');
+    setState(() {
+      _locale = Locale(savedLocale ?? 'en');
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // Eğer locale yüklenmediyse sadece loading göster
+    if (_locale == null) {
+      return const MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        ),
+      );
+    }
+    // Locale yüklendiyse normal MaterialApp'ı başlat
     return MaterialApp(
       title: 'Viajeras Frontend',
       debugShowCheckedModeBanner: false,
-
-      // Theme configuration
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.blue,
@@ -56,9 +86,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-
-      // Localization (uncomment when ready)
-
+      locale: _locale,
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
@@ -66,11 +94,7 @@ class MyApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: AppLocalizations.supportedLocales,
-
-      // Initial route
       initialRoute: '/login',
-      // Route configuration
-
       routes: {
         '/register': (context) => const RegisterScreen(),
         '/login': (context) => const Login(),
@@ -78,28 +102,64 @@ class MyApp extends StatelessWidget {
         '/map': (context) => const MapScreen(),
         '/invalid-token': (context) => const InvalidTokenScreen(),
       },
-
-      // Handle dynamic routes (like reset-passcode with token)
       onGenerateRoute: (settings) {
-        final uri = Uri.parse(settings.name ?? '');
-
-        // Handle reset-passcode route with token parameter
-        if (uri.pathSegments.isNotEmpty &&
-            uri.pathSegments[0] == 'reset-passcode') {
-          final token = uri.queryParameters['token'];
+        debugPrint(
+            'onGenerateRoute called with settings: name=${settings.name}, arguments=${settings.arguments}');
+        try {
+          if (settings.name == null) {
+            debugPrint('Route name is null, redirecting to InvalidTokenScreen');
+            return MaterialPageRoute(
+              builder: (context) => const InvalidTokenScreen(),
+              settings: settings,
+            );
+          }
+          final uri = Uri.tryParse(settings.name ?? '');
+          if (uri == null) {
+            debugPrint(
+                'Route URI could not be parsed: \'${settings.name}\', redirecting to InvalidTokenScreen');
+            return MaterialPageRoute(
+              builder: (context) => const InvalidTokenScreen(),
+              settings: settings,
+            );
+          }
+          if (uri.pathSegments.isNotEmpty &&
+              uri.pathSegments[0] == 'reset-passcode') {
+            // Hem query param hem arguments ile token gelebilir, ikisini de kontrol et
+            String? token = uri.queryParameters['token'];
+            if ((token == null || token.isEmpty) &&
+                settings.arguments != null) {
+              // arguments Map ise oradan da token almayı dene
+              final args = settings.arguments;
+              if (args is Map && args['token'] is String) {
+                token = args['token'] as String;
+              }
+            }
+            if (token != null && token.isNotEmpty) {
+              debugPrint(
+                  'Reset-passcode route called with token: $token, settings: $settings');
+              return MaterialPageRoute(
+                builder: (context) => ResetPasscodeScreen(token: token ?? ''),
+                settings: settings,
+              );
+            } else {
+              debugPrint(
+                  'Reset-passcode route called with missing or empty token (query/arguments), redirecting to InvalidTokenScreen');
+              return MaterialPageRoute(
+                builder: (context) => const InvalidTokenScreen(),
+                settings: settings,
+              );
+            }
+          }
+          debugPrint('Unknown route: ${settings.name}, returning null.');
+          return null;
+        } catch (e, stack) {
+          debugPrint('onGenerateRoute error: $e\n$stack');
           return MaterialPageRoute(
-            builder: (context) => ResetPasscodeScreen(token: token),
+            builder: (context) => const InvalidTokenScreen(),
             settings: settings,
           );
         }
-
-        // Handle other dynamic routes here if needed
-
-        // Return null to use the default route handling
-        return null;
       },
-
-      // 404 fallback
       onUnknownRoute: (settings) {
         return MaterialPageRoute(
           builder: (context) => const InvalidTokenScreen(),
@@ -118,14 +178,12 @@ class AppWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // This ensures full screen usage like v-app
       body: SafeArea(
-        // Set to false if you want full screen including status bar area
         top: false,
         child: Container(
           width: double.infinity,
           height: double.infinity,
-          color: Colors.white, // Equivalent to background-color: white
+          color: Colors.white,
           child: child,
         ),
       ),

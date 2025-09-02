@@ -15,7 +15,7 @@ class _ForgotPasscodePageState extends State<ForgotPasscodePage> {
   bool _loading = false;
   String _successMessage = '';
   String _errorMessage = '';
-  String _selectedLocale = 'tr';
+  String _selectedLocale = 'en';
   final String _baseUrl = 'your-backend-url.com'; // Replace with actual URL
   late final ForgotPasscodeService _forgotPasscodeService;
 
@@ -35,7 +35,7 @@ class _ForgotPasscodePageState extends State<ForgotPasscodePage> {
   void _loadLocale() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _selectedLocale = prefs.getString('locale') ?? 'tr';
+      _selectedLocale = prefs.getString('locale') ?? 'en';
     });
   }
 
@@ -88,7 +88,7 @@ class _ForgotPasscodePageState extends State<ForgotPasscodePage> {
   }
 
   Future<void> _handleSubmit() async {
-    if (!_formKey.currentState!.validate()) {
+    if (!(_formKey.currentState?.validate() ?? false)) {
       return;
     }
 

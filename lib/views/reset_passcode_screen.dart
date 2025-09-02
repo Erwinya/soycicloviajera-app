@@ -2,91 +2,37 @@ import 'package:flutter/material.dart';
 import '../services/reset_passcode_service.dart';
 
 class ResetPasscodeScreen extends StatefulWidget {
-  final String? token;
+  final String token;
 
-  const ResetPasscodeScreen({Key? key, this.token}) : super(key: key);
+  const ResetPasscodeScreen({Key? key, required this.token}) : super(key: key);
 
   @override
   State<ResetPasscodeScreen> createState() => _ResetPasscodeScreenState();
 }
 
 class _ResetPasscodeScreenState extends State<ResetPasscodeScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _newPasscodeController = TextEditingController();
-  bool _isPasscodeVisible = false;
-  bool _isLoading = false;
-  bool _showSuccessMessage = false;
-  bool _showErrorMessage = false;
-  final String _baseUrl =
-      'localhost:3000'; // Replace with your actual backend URL
-  late final ResetPasscodeService _resetPasscodeService;
-
-  @override
-  void initState() {
-    super.initState();
-    _resetPasscodeService = ResetPasscodeService(baseUrl: _baseUrl);
-  }
-
-  @override
-  void dispose() {
-    _newPasscodeController.dispose();
-    super.dispose();
-  }
-
-  String? _validateRequired(String? value, String fieldName) {
-    if (value == null || value.isEmpty) {
-      return 'You must enter a $fieldName.';
-    }
-    return null;
-  }
-
-  Future<void> _resetPasscode() async {
-    setState(() {
-      _showErrorMessage = false;
-      _showSuccessMessage = false;
-    });
-
-    if (!_formKey.currentState!.validate() || widget.token == null) {
-      setState(() {
-        _showErrorMessage = true;
-      });
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final response = await _resetPasscodeService.resetPasscode(
-        token: widget.token!,
-        passcode: _newPasscodeController.text,
-      );
-      if (response.statusCode == 204) {
-        setState(() {
-          _showSuccessMessage = true;
-          _newPasscodeController.clear();
-        });
-      } else {
-        setState(() {
-          _showErrorMessage = true;
-        });
-      }
-    } catch (error) {
-      setState(() {
-        _showErrorMessage = true;
-      });
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    debugPrint('ResetPasscodeScreen build: widget.token="${widget.token}"');
+    // Token null olamaz, sadece boşluk kontrolü yapıyoruz
+    if (widget.token.isEmpty) {
+      return const Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error, color: Colors.red, size: 48),
+              SizedBox(height: 16),
+              Text(
+                'Invalid or missing token. Please use the link from your email.',
+                style: TextStyle(fontSize: 18, color: Colors.red),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -113,8 +59,7 @@ class _ResetPasscodeScreenState extends State<ResetPasscodeScreen> {
                   key: _formKey,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Title
+                    children: <Widget>[
                       const Text(
                         'Reset Passcode',
                         style: TextStyle(
@@ -124,20 +69,16 @@ class _ResetPasscodeScreenState extends State<ResetPasscodeScreen> {
                         ),
                       ),
                       const SizedBox(height: 32),
-
-                      // New Passcode Field
                       TextFormField(
                         controller: _newPasscodeController,
                         obscureText: !_isPasscodeVisible,
                         decoration: InputDecoration(
-                          labelText: 'New Passcode', // newPasscode
+                          labelText: 'New Passcode',
                           border: const OutlineInputBorder(),
                           suffixIcon: IconButton(
-                            icon: Icon(
-                              _isPasscodeVisible
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                            ),
+                            icon: Icon(_isPasscodeVisible
+                                ? Icons.visibility_off
+                                : Icons.visibility),
                             onPressed: () {
                               setState(() {
                                 _isPasscodeVisible = !_isPasscodeVisible;
@@ -149,8 +90,6 @@ class _ResetPasscodeScreenState extends State<ResetPasscodeScreen> {
                             _validateRequired(value, 'new passcode'),
                       ),
                       const SizedBox(height: 24),
-
-                      // Reset Button
                       SizedBox(
                         width: double.infinity,
                         height: 50,
@@ -174,13 +113,11 @@ class _ResetPasscodeScreenState extends State<ResetPasscodeScreen> {
                                   ),
                                 )
                               : const Text(
-                                  'Reset Passcode', // resetPasscode
+                                  'Reset Passcode',
                                   style: TextStyle(fontSize: 16),
                                 ),
                         ),
                       ),
-
-                      // Success Message
                       if (_showSuccessMessage) ...[
                         const SizedBox(height: 16),
                         Container(
@@ -206,7 +143,7 @@ class _ResetPasscodeScreenState extends State<ResetPasscodeScreen> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  'Passcode changed successfully!', // passcodeChangeSuccessful
+                                  'Passcode changed successfully!',
                                   style: TextStyle(
                                     color: Colors.green.shade800,
                                     fontWeight: FontWeight.w500,
@@ -217,8 +154,6 @@ class _ResetPasscodeScreenState extends State<ResetPasscodeScreen> {
                           ),
                         ),
                       ],
-
-                      // Error Message
                       if (_showErrorMessage) ...[
                         const SizedBox(height: 16),
                         Container(
@@ -244,7 +179,7 @@ class _ResetPasscodeScreenState extends State<ResetPasscodeScreen> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  'Passcode change error. Please try again.', // passcodeChangeError
+                                  'Passcode change error. Please try again.',
                                   style: TextStyle(
                                     color: Colors.red.shade800,
                                     fontWeight: FontWeight.w500,
@@ -264,5 +199,73 @@ class _ResetPasscodeScreenState extends State<ResetPasscodeScreen> {
         ),
       ),
     );
+  }
+
+  final _formKey = GlobalKey<FormState>();
+  final _newPasscodeController = TextEditingController();
+  bool _isPasscodeVisible = false;
+  bool _isLoading = false;
+  bool _showSuccessMessage = false;
+  bool _showErrorMessage = false;
+  final String _baseUrl =
+      'localhost:3000'; // Replace with your actual backend URL
+  late final ResetPasscodeService _resetPasscodeService;
+
+  @override
+  void initState() {
+    super.initState();
+    _resetPasscodeService = ResetPasscodeService(baseUrl: _baseUrl);
+  }
+
+  @override
+  void dispose() {
+    _newPasscodeController.dispose();
+    super.dispose();
+  }
+
+  String? _validateRequired(String? value, String fieldName) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your $fieldName.';
+    }
+    return null;
+  }
+
+  Future<void> _resetPasscode() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    if (widget.token.isEmpty) {
+      setState(() {
+        _showErrorMessage = true;
+        _isLoading = false;
+      });
+      return;
+    }
+    setState(() {
+      _isLoading = true;
+      _showErrorMessage = false;
+      _showSuccessMessage = false;
+    });
+    try {
+      final response = await _resetPasscodeService.resetPasscode(
+        token: widget.token,
+        passcode: _newPasscodeController.text,
+      );
+      if (response.statusCode == 200) {
+        setState(() {
+          _showSuccessMessage = true;
+        });
+      } else {
+        setState(() {
+          _showErrorMessage = true;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _showErrorMessage = true;
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 }

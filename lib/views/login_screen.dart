@@ -58,7 +58,8 @@ class _LoginPageState extends State<Login> {
     final savedLocale = prefs.getString('locale');
     if (mounted) {
       setState(() {
-        _selectedLocale = savedLocale ?? 'en'; // Default to 'en' if no locale is saved
+        _selectedLocale =
+            savedLocale ?? 'en'; // Default to 'en' if no locale is saved
       });
     }
   }
@@ -266,15 +267,14 @@ class _LoginPageState extends State<Login> {
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.error_outline,
-                                  color: Colors.red.shade600,
-                                  size: 20), // Changed to outline
+                              const Icon(Icons.error_outline,
+                                  color: Colors.red, size: 20),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
                                   _errorMessage,
-                                  style: TextStyle(
-                                    color: Colors.red.shade800,
+                                  style: const TextStyle(
+                                    color: Colors.red,
                                     fontSize: 14,
                                   ),
                                 ),
@@ -307,33 +307,35 @@ class _LoginPageState extends State<Login> {
                             Text(
                               _t('password'),
                               style: const TextStyle(
-                                fontSize: 16,
                                 fontWeight: FontWeight.w500,
                                 color: Colors.black87,
                               ),
                             ),
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.pushNamed(
-                                    context, '/forgot-passcode');
-                              },
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    _t('forgot'),
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.blue,
-                                      decoration: TextDecoration.none,
+                            MouseRegion(
+                              cursor: SystemMouseCursors.click,
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.pushNamed(
+                                      context, '/forgot-passcode');
+                                },
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      _t('forgot'),
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.blue,
+                                        decoration: TextDecoration.none,
+                                      ),
                                     ),
-                                  ),
-                                  const Icon(
-                                    Icons.chevron_right,
-                                    color: Colors.blue,
-                                    size: 16,
-                                  ),
-                                ],
+                                    const Icon(
+                                      Icons.chevron_right,
+                                      color: Colors.blue,
+                                      size: 16,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ],
@@ -418,30 +420,33 @@ class _LoginPageState extends State<Login> {
                         margin: const EdgeInsets.only(
                             bottom: 16), // Increased bottom margin
                         child: Center(
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.pushNamed(context, '/register');
-                            },
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment
-                                  .center, // Center the row content
-                              children: [
-                                Text(
-                                  _t('signup'),
-                                  style: const TextStyle(
-                                    color: Colors.blue,
-                                    fontWeight:
-                                        FontWeight.w500, // Slightly bolder
-                                    decoration: TextDecoration.none,
+                          child: MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.pushNamed(context, '/register');
+                              },
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment
+                                    .center, // Center the row content
+                                children: [
+                                  Text(
+                                    _t('signup'),
+                                    style: const TextStyle(
+                                      color: Colors.blue,
+                                      fontWeight:
+                                          FontWeight.w500, // Slightly bolder
+                                      decoration: TextDecoration.none,
+                                    ),
                                   ),
-                                ),
-                                const Icon(
-                                  Icons.chevron_right,
-                                  color: Colors.blue,
-                                  size: 18, // Slightly larger
-                                ),
-                              ],
+                                  const Icon(
+                                    Icons.chevron_right,
+                                    color: Colors.blue,
+                                    size: 18, // Slightly larger
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),

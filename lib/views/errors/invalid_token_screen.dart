@@ -1,46 +1,17 @@
 import 'package:flutter/material.dart';
-import '../../services/token_validation_service.dart';
 
 class InvalidTokenScreen extends StatefulWidget {
-  final String? token;
-
-  const InvalidTokenScreen({Key? key, this.token}) : super(key: key);
+  const InvalidTokenScreen({Key? key}) : super(key: key);
 
   @override
   State<InvalidTokenScreen> createState() => _InvalidTokenScreenState();
 }
 
 class _InvalidTokenScreenState extends State<InvalidTokenScreen> {
-  final String _baseUrl =
-      'localhost:3000'; // Replace with your actual backend URL
-  late final TokenValidationService _tokenValidationService;
-
   @override
   void initState() {
     super.initState();
-    _tokenValidationService = TokenValidationService(baseUrl: _baseUrl);
-    _validateToken();
-  }
-
-  Future<void> _validateToken() async {
-    if (widget.token == null || widget.token!.isEmpty) {
-      setState(() {});
-      return;
-    }
-    try {
-      final isValid =
-          await _tokenValidationService.validateToken(widget.token!);
-      if (isValid) {
-        if (mounted) {
-          Navigator.pushReplacementNamed(context, '/reset-passcode',
-              arguments: {'token': widget.token});
-        }
-      } else {
-        setState(() {});
-      }
-    } catch (e) {
-      setState(() {});
-    }
+    // Token kontrolü gereksiz, sadece ekran açılıyor
   }
 
   void _navigateToForgotPasscode() {
@@ -80,11 +51,12 @@ class _InvalidTokenScreenState extends State<InvalidTokenScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         // Logo
-                        Container(
-                          constraints: const BoxConstraints(maxWidth: 180),
-                          margin: const EdgeInsets.only(top: 8, bottom: 16),
-                          child: Image.asset(
-                            'lib/assets/images/cicloviajera-color-2.png',
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          height: 180,
+                          child: Image(
+                            image: AssetImage(
+                                'lib/assets/images/cicloviajera-color-2.png'),
                             fit: BoxFit.contain,
                           ),
                         ),
@@ -116,12 +88,12 @@ class _InvalidTokenScreenState extends State<InvalidTokenScreen> {
                                 padding: const EdgeInsets.all(16.0),
                                 child: Row(
                                   children: [
-                                    Icon(
+                                    const Icon(
                                       Icons.error,
                                       color: Colors.red,
                                       size: 20,
                                     ),
-                                    SizedBox(width: 12),
+                                    const SizedBox(width: 12),
                                     Expanded(
                                       child: Text(
                                         'Invalid or expired reset token.',
