@@ -31,16 +31,16 @@ class _MapScreenState extends State<MapScreen> {
     'contact': 'sandra_a88@gmail.com',
   };
 
-  final List<Map<String, dynamic>> _contactOptions = [
+  final List<Map<String, dynamic>> _contactOptions = const [
     {'text': 'Email', 'value': 'EMAIL'},
     {'text': 'Phone', 'value': 'PHONE'},
     {'text': 'WhatsApp', 'value': 'WHATSAPP'}
   ];
 
-  final String _baseUrl = 'localhost:8080'; // Replace with backend URL
+  final String _baseUrl = 'localhost:8080';
   late final MapService _mapService = MapService(baseUrl: _baseUrl);
 
-  final Map<String, Map<String, String>> _translations = {
+  final Map<String, Map<String, String>> _translations = const {
     'tr': {
       'updateProfile': 'Profili Güncelle',
       'logout': 'Çıkış Yap',
@@ -110,7 +110,7 @@ class _MapScreenState extends State<MapScreen> {
     super.dispose();
   }
 
-  Future<void> _loadLocale() async {
+  void _loadLocale() async {
     final prefs = await SharedPreferences.getInstance();
     if (!mounted) return;
     setState(() {
@@ -134,12 +134,10 @@ class _MapScreenState extends State<MapScreen> {
       final locations = await _mapService.fetchLocations(token);
       if (!mounted) return;
       setState(() => _locations = locations);
-    } catch (_) {
-      // hata yönetimi (log eklenebilir)
-    }
+    } catch (_) {}
   }
 
-  Future<void> _logout() async {
+  void _logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('accessToken');
     await prefs.remove('user');
@@ -186,7 +184,6 @@ class _MapScreenState extends State<MapScreen> {
         };
         _updateDialog = false;
       });
-      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(_t('profileUpdated'))),
       );
@@ -211,7 +208,9 @@ class _MapScreenState extends State<MapScreen> {
           onTap: () => _showLocationPopup(location),
           child: Icon(
             Icons.location_on,
-            color: location['isOwner'] == true ? Colors.orange : Colors.red,
+            color: location['isOwner'] == true
+                ? const Color.fromRGBO(255, 165, 0, 1)
+                : const Color.fromRGBO(255, 0, 0, 1),
             size: 40,
           ),
         ),
@@ -255,11 +254,11 @@ class _MapScreenState extends State<MapScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Color.fromRGBO(0, 0, 0, 0.1),
               blurRadius: 10,
-              offset: const Offset(0, 4),
+              offset: Offset(0, 4),
             ),
           ],
         ),
@@ -267,34 +266,22 @@ class _MapScreenState extends State<MapScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                _t('updateProfile'),
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+              const Text(
+                'Update Profile',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
               TextField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: _t('name'),
-                ),
-              ),
+                  controller: _nameController,
+                  decoration: InputDecoration(labelText: _t('name'))),
               const SizedBox(height: 8),
               TextField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  labelText: _t('email'),
-                ),
-              ),
+                  controller: _emailController,
+                  decoration: InputDecoration(labelText: _t('email'))),
               const SizedBox(height: 8),
               TextField(
-                controller: _descriptionController,
-                decoration: InputDecoration(
-                  labelText: _t('aboutMe'),
-                ),
-              ),
+                  controller: _descriptionController,
+                  decoration: InputDecoration(labelText: _t('aboutMe'))),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 value: _selectedContactMethod,
@@ -309,27 +296,18 @@ class _MapScreenState extends State<MapScreen> {
                     _selectedContactMethod = value ?? 'EMAIL';
                   });
                 },
-                decoration: InputDecoration(
-                  labelText: _t('preferredContact'),
-                ),
+                decoration: InputDecoration(labelText: _t('preferredContact')),
               ),
               const SizedBox(height: 8),
               TextField(
-                controller: _contactController,
-                decoration: InputDecoration(
-                  labelText: _t('contactInfo'),
-                ),
-              ),
+                  controller: _contactController,
+                  decoration: InputDecoration(labelText: _t('contactInfo'))),
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
-                    onPressed: () {
-                      setState(() {
-                        _updateDialog = false;
-                      });
-                    },
+                    onPressed: () => setState(() => _updateDialog = false),
                     child: Text(_t('cancel')),
                   ),
                   const SizedBox(width: 8),
@@ -366,7 +344,6 @@ class _MapScreenState extends State<MapScreen> {
   Widget _buildMainLayout() {
     return Row(
       children: [
-        // Sidebar
         Container(
           width: 280,
           color: Colors.grey.shade100,
@@ -386,17 +363,12 @@ class _MapScreenState extends State<MapScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            _user['name'] ?? '',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          Text(
-                            _user['email'] ?? '',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
+                          Text(_user['name'] ?? '',
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold)),
+                          Text(_user['email'] ?? '',
+                              style: TextStyle(
+                                  fontSize: 12, color: Colors.grey.shade600)),
                         ],
                       ),
                     ),
@@ -417,14 +389,11 @@ class _MapScreenState extends State<MapScreen> {
             ],
           ),
         ),
-        // Map Area
         Expanded(
           child: FlutterMap(
             mapController: _mapController,
             options: const MapOptions(
-              initialCenter: LatLng(40.0637, -3.7492),
-              initialZoom: 7.0,
-            ),
+                initialCenter: LatLng(40.0637, -3.7492), initialZoom: 7.0),
             children: [
               TileLayer(
                 urlTemplate:
