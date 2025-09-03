@@ -85,8 +85,10 @@ class _MyAppState extends State<MyApp> {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       localeResolutionCallback: (locale, supportedLocales) {
-        // Her zaman İspanyolca başlat
-        return const Locale('es');
+        if (_locale != null && supportedLocales.contains(_locale)) {
+          return _locale;
+        }
+        return supportedLocales.first;
       },
 
       // Eğer locale yüklenmediyse loading göster
@@ -99,8 +101,9 @@ class _MyAppState extends State<MyApp> {
             ),
 
       routes: {
-        '/register': (context) => const RegisterScreen(),
-        '/forgot-passcode': (context) => const ForgotPasscodePage(),
+        '/register': (context) => RegisterScreen(onLocaleChanged: setLocale),
+        '/forgot-passcode': (context) =>
+            ForgotPasscodePage(onLocaleChanged: setLocale),
         '/map': (context) => const MapScreen(),
         '/invalid-token': (context) => const InvalidTokenScreen(),
       },

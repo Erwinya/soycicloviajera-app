@@ -4,7 +4,8 @@ import '../l10n/app_localizations.dart';
 // import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Şimdilik yorum satırı
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({Key? key}) : super(key: key);
+  final void Function(Locale)? onLocaleChanged;
+  const RegisterScreen({Key? key, this.onLocaleChanged}) : super(key: key);
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();

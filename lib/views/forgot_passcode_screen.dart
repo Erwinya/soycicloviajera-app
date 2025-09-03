@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../services/forgot_passcode_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class ForgotPasscodePage extends StatefulWidget {
-  const ForgotPasscodePage({Key? key}) : super(key: key);
+  final void Function(Locale)? onLocaleChanged;
+  const ForgotPasscodePage({Key? key, this.onLocaleChanged}) : super(key: key);
 
   @override
   State<ForgotPasscodePage> createState() => _ForgotPasscodePageState();
@@ -29,7 +29,6 @@ class _ForgotPasscodePageState extends State<ForgotPasscodePage> {
     _emailController.dispose();
     super.dispose();
   }
-
 
   String _t(String key) {
     final Map<String, Map<String, String>> translations = {
