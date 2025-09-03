@@ -15,14 +15,12 @@ class _ForgotPasscodePageState extends State<ForgotPasscodePage> {
   bool _loading = false;
   String _successMessage = '';
   String _errorMessage = '';
-  String _selectedLocale = 'en';
   final String _baseUrl = 'your-backend-url.com'; // Replace with actual URL
   late final ForgotPasscodeService _forgotPasscodeService;
 
   @override
   void initState() {
     super.initState();
-    _loadLocale();
     _forgotPasscodeService = ForgotPasscodeService(baseUrl: _baseUrl);
   }
 
@@ -32,12 +30,6 @@ class _ForgotPasscodePageState extends State<ForgotPasscodePage> {
     super.dispose();
   }
 
-  void _loadLocale() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _selectedLocale = prefs.getString('locale') ?? 'en';
-    });
-  }
 
   String _t(String key) {
     final Map<String, Map<String, String>> translations = {
@@ -70,8 +62,8 @@ class _ForgotPasscodePageState extends State<ForgotPasscodePage> {
         'validMailErrorMsg': 'Por favor ingrese una dirección de correo válida',
       },
     };
-
-    return translations[_selectedLocale]?[key] ?? key;
+    final locale = Localizations.localeOf(context).languageCode;
+    return translations[locale]?[key] ?? key;
   }
 
   String? _validateEmail(String? value) {
