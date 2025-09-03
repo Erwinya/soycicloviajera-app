@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
 
 // Import your screens
@@ -13,10 +12,8 @@ import 'views/map_screen.dart';
 import 'views/errors/invalid_token_screen.dart';
 
 void main() {
-  // Ensure Flutter binding is initialized
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Set system UI overlay style (status bar, navigation bar)
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -48,6 +45,7 @@ class _MyAppState extends State<MyApp> {
   Future<void> _loadLocale() async {
     final prefs = await SharedPreferences.getInstance();
     final savedLocale = prefs.getString('locale');
+    if (!mounted) return;
     setState(() {
       _locale = Locale(savedLocale ?? 'en');
     });
@@ -55,7 +53,6 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    // Eğer locale yüklenmediyse sadece loading göster
     if (_locale == null) {
       return const MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -64,7 +61,7 @@ class _MyAppState extends State<MyApp> {
         ),
       );
     }
-    // Locale yüklendiyse normal MaterialApp'ı başlat
+
     return MaterialApp(
       title: 'Viajeras Frontend',
       debugShowCheckedModeBanner: false,
@@ -87,12 +84,7 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
       locale: _locale,
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       initialRoute: '/login',
       routes: {
@@ -104,88 +96,52 @@ class _MyAppState extends State<MyApp> {
       },
       onGenerateRoute: (settings) {
         debugPrint(
-            'onGenerateRoute called with settings: name=${settings.name}, arguments=${settings.arguments}');
-        try {
-          if (settings.name == null) {
-            debugPrint('Route name is null, redirecting to InvalidTokenScreen');
-            return MaterialPageRoute(
-              builder: (context) => const InvalidTokenScreen(),
-              settings: settings,
-            );
-          }
-          final uri = Uri.tryParse(settings.name ?? '');
-          if (uri == null) {
-            debugPrint(
-                'Route URI could not be parsed: \'${settings.name}\', redirecting to InvalidTokenScreen');
-            return MaterialPageRoute(
-              builder: (context) => const InvalidTokenScreen(),
-              settings: settings,
-            );
-          }
-          if (uri.pathSegments.isNotEmpty &&
-              uri.pathSegments[0] == 'reset-passcode') {
-            // Hem query param hem arguments ile token gelebilir, ikisini de kontrol et
-            String? token = uri.queryParameters['token'];
-            if ((token == null || token.isEmpty) &&
-                settings.arguments != null) {
-              // arguments Map ise oradan da token almayı dene
-              final args = settings.arguments;
-              if (args is Map && args['token'] is String) {
-                token = args['token'] as String;
-              }
-            }
-            if (token != null && token.isNotEmpty) {
-              debugPrint(
-                  'Reset-passcode route called with token: $token, settings: $settings');
-              return MaterialPageRoute(
-                builder: (context) => ResetPasscodeScreen(token: token ?? ''),
-                settings: settings,
-              );
-            } else {
-              debugPrint(
-                  'Reset-passcode route called with missing or empty token (query/arguments), redirecting to InvalidTokenScreen');
-              return MaterialPageRoute(
-                builder: (context) => const InvalidTokenScreen(),
-                settings: settings,
-              );
-            }
-          }
-          debugPrint('Unknown route: ${settings.name}, returning null.');
-          return null;
-        } catch (e, stack) {
-          debugPrint('onGenerateRoute error: $e\n$stack');
+            'onGenerateRoute: name=${settings.name}, arguments=${settings.arguments}');
+        final routeName = settings.name ?? '';
+        if (routeName.isEmpty) {
           return MaterialPageRoute(
             builder: (context) => const InvalidTokenScreen(),
             settings: settings,
           );
         }
-      },
-      onUnknownRoute: (settings) {
+
+        final uri = Uri.tryParse(routeName);
+        if (uri == null || uri.pathSegments.isEmpty) {
+          return MaterialPageRoute(
+            builder: (context) => const InvalidTokenScreen(),
+            settings: settings,
+          );
+        }
+
+        if (uri.pathSegments[0] == 'reset-passcode') {
+          String token = uri.queryParameters['token'] ?? '';
+          if (token.isEmpty && settings.arguments is Map) {
+            final args = settings.arguments as Map<String, dynamic>?;
+            if (args != null &&
+                args['token'] is String &&
+                (args['token'] as String).isNotEmpty) {
+              token = args['token'] as String;
+            }
+          }
+          if (token.isNotEmpty) {
+            return MaterialPageRoute(
+              builder: (context) => ResetPasscodeScreen(token: token),
+              settings: settings,
+            );
+          }
+          return MaterialPageRoute(
+            builder: (context) => const InvalidTokenScreen(),
+            settings: settings,
+          );
+        }
+
         return MaterialPageRoute(
           builder: (context) => const InvalidTokenScreen(),
+          settings: settings,
         );
       },
-    );
-  }
-}
-
-// Optional: Custom route wrapper that mimics v-app behavior
-class AppWrapper extends StatelessWidget {
-  final Widget child;
-
-  const AppWrapper({Key? key, required this.child}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        top: false,
-        child: Container(
-          width: double.infinity,
-          height: double.infinity,
-          color: Colors.white,
-          child: child,
-        ),
+      onUnknownRoute: (settings) => MaterialPageRoute(
+        builder: (context) => const InvalidTokenScreen(),
       ),
     );
   }

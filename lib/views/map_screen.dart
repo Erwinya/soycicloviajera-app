@@ -288,7 +288,7 @@ class _MapScreenState extends State<MapScreen> {
                 items: _contactOptions
                     .map((option) => DropdownMenuItem<String>(
                           value: option['value'],
-                          child: Text(option['text']!),
+                          child: Text(option['text'] ?? ''),
                         ))
                     .toList(),
                 onChanged: (value) {

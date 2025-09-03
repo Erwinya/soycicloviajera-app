@@ -14,12 +14,12 @@ class Login extends StatefulWidget {
 }
 
 class _LoginPageState extends State<Login> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   bool _visible = false;
   bool _isLoading = false;
   String _errorMessage = '';
-  String _selectedLocale = 'en';
+  String _selectedLocale = 'en'; // Default locale
   late final LoginService _loginService;
   final String _yourBackendDomain = 'YOUR_BACKEND_BASE_URL';
   final bool _isProduction = bool.fromEnvironment('dart.vm.product');
@@ -64,6 +64,7 @@ class _LoginPageState extends State<Login> {
   Future<void> _checkIfLoggedIn() async {
     final prefs = await SharedPreferences.getInstance();
     final accessToken = prefs.getString('accessToken');
+
     if (!mounted) return;
     if (accessToken != null && accessToken.isNotEmpty) {
       Navigator.pushReplacementNamed(context, '/map');
@@ -80,7 +81,7 @@ class _LoginPageState extends State<Login> {
   }
 
   String _t(String key) {
-    const Map<String, Map<String, String>> translations = {
+    final Map<String, Map<String, String>> translations = {
       'tr': {
         'account': 'Hesap',
         'email': 'Email',
@@ -137,8 +138,6 @@ class _LoginPageState extends State<Login> {
       _errorMessage = '';
     });
 
-    bool mountedCopy = mounted;
-
     try {
       final result = await _loginService.login(
           _emailController.text, _passwordController.text);
@@ -152,7 +151,7 @@ class _LoginPageState extends State<Login> {
           if (data['user'] != null) {
             await prefs.setString('user', jsonEncode(data['user']));
           }
-          if (!mountedCopy) return;
+          if (!mounted) return;
           Navigator.pushReplacementNamed(context, '/map');
         } else {
           throw Exception(_t('loginFailedGeneric'));
@@ -167,7 +166,7 @@ class _LoginPageState extends State<Login> {
         throw Exception('${_t('loginFailedGeneric')} (Status: $statusCode)');
       }
     } on Exception catch (error) {
-      if (!mountedCopy) return;
+      if (!mounted) return;
       setState(() {
         _errorMessage = error.toString().replaceFirst('Exception: ', '');
         if (_errorMessage.toLowerCase().contains('invalid') ||
@@ -175,9 +174,8 @@ class _LoginPageState extends State<Login> {
           _errorMessage = _t('invalidCredentials');
         }
       });
-    }
-
-    if (mountedCopy) {
+    } finally {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
@@ -217,6 +215,7 @@ class _LoginPageState extends State<Login> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Logo
                       Center(
                         child: Container(
                           constraints: const BoxConstraints(maxWidth: 180),
@@ -227,6 +226,8 @@ class _LoginPageState extends State<Login> {
                           ),
                         ),
                       ),
+
+                      // Account title
                       Container(
                         margin: const EdgeInsets.only(bottom: 16),
                         child: Text(
@@ -238,32 +239,29 @@ class _LoginPageState extends State<Login> {
                           ),
                         ),
                       ),
+
+                      // Error message
                       if (_errorMessage.isNotEmpty)
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(12),
                           margin: const EdgeInsets.only(bottom: 16),
                           decoration: BoxDecoration(
-                            color: const Color.fromRGBO(255, 235, 238, 1),
-                            border: Border.all(
-                                color: const Color.fromRGBO(255, 205, 210, 1)),
+                            color: Colors.red.shade50,
+                            border: Border.all(color: Colors.red.shade200),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Row(
-                            children: [
-                              const Icon(Icons.error_outline,
+                            children: const [
+                              Icon(Icons.error_outline,
                                   color: Colors.red, size: 20),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  _errorMessage,
-                                  style: const TextStyle(
-                                      color: Colors.red, fontSize: 14),
-                                ),
-                              ),
+                              SizedBox(width: 8),
+                              // Text değişken olduğu için const olamaz
                             ],
                           ),
                         ),
+
+                      // Email field
                       TextField(
                         controller: _emailController,
                         decoration: const InputDecoration(
@@ -276,6 +274,8 @@ class _LoginPageState extends State<Login> {
                         keyboardType: TextInputType.emailAddress,
                         textInputAction: TextInputAction.next,
                       ),
+
+                      // Password label and forgot password
                       Container(
                         margin: const EdgeInsets.fromLTRB(0, 16, 0, 8),
                         child: Row(
@@ -306,8 +306,11 @@ class _LoginPageState extends State<Login> {
                                         decoration: TextDecoration.none,
                                       ),
                                     ),
-                                    Icon(Icons.chevron_right,
-                                        color: Colors.blue, size: 16),
+                                    Icon(
+                                      Icons.chevron_right,
+                                      color: Colors.blue,
+                                      size: 16,
+                                    ),
                                   ],
                                 ),
                               ),
@@ -315,6 +318,8 @@ class _LoginPageState extends State<Login> {
                           ],
                         ),
                       ),
+
+                      // Password field
                       TextField(
                         controller: _passwordController,
                         obscureText: !_visible,
@@ -322,9 +327,11 @@ class _LoginPageState extends State<Login> {
                           hintText: _t('password'),
                           prefixIcon: const Icon(Icons.lock_outline),
                           suffixIcon: IconButton(
-                            icon: Icon(_visible
-                                ? Icons.visibility_off_outlined
-                                : Icons.visibility_outlined),
+                            icon: Icon(
+                              _visible
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                            ),
                             onPressed: () {
                               if (!mounted) return;
                               setState(() {
@@ -340,6 +347,8 @@ class _LoginPageState extends State<Login> {
                         textInputAction: TextInputAction.done,
                         onSubmitted: (_) => _isLoading ? null : _login(),
                       ),
+
+                      // Login button
                       Container(
                         width: double.infinity,
                         margin: const EdgeInsets.fromLTRB(0, 24, 0, 24),
@@ -359,16 +368,22 @@ class _LoginPageState extends State<Login> {
                                   height: 20,
                                   width: 20,
                                   child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                          Colors.white)),
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
+                                  ),
                                 )
-                              : Text(_t('login'),
+                              : Text(
+                                  _t('login'),
                                   style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold)),
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                         ),
                       ),
+
+                      // Sign up link
                       Container(
                         width: double.infinity,
                         margin: const EdgeInsets.only(bottom: 16),
@@ -376,25 +391,34 @@ class _LoginPageState extends State<Login> {
                           child: MouseRegion(
                             cursor: SystemMouseCursors.click,
                             child: GestureDetector(
-                              onTap: () =>
-                                  Navigator.pushNamed(context, '/register'),
+                              onTap: () {
+                                Navigator.pushNamed(context, '/register');
+                              },
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: const [
-                                  Text('Sign Up',
-                                      style: TextStyle(
-                                          color: Colors.blue,
-                                          fontWeight: FontWeight.w500,
-                                          decoration: TextDecoration.none)),
-                                  Icon(Icons.chevron_right,
-                                      color: Colors.blue, size: 18),
+                                  Text(
+                                    'Sign Up',
+                                    style: TextStyle(
+                                      color: Colors.blue,
+                                      fontWeight: FontWeight.w500,
+                                      decoration: TextDecoration.none,
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.chevron_right,
+                                    color: Colors.blue,
+                                    size: 18,
+                                  ),
                                 ],
                               ),
                             ),
                           ),
                         ),
                       ),
+
+                      // Language buttons
                       if (_languageCodes.length > 1)
                         Container(
                           margin: const EdgeInsets.only(top: 16),
@@ -414,24 +438,26 @@ class _LoginPageState extends State<Login> {
                                           ? Colors.blue.shade700
                                           : Colors.black54,
                                       side: BorderSide(
-                                          color: _selectedLocale == code
-                                              ? Colors.blue.shade300
-                                              : Colors.grey.shade300),
+                                        color: _selectedLocale == code
+                                            ? Colors.blue.shade300
+                                            : Colors.grey.shade300,
+                                      ),
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 10, horizontal: 4),
                                       shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8)),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
                                     ),
                                     child: Text(
                                       _languageLabels[code] ??
                                           code.toUpperCase(),
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: _selectedLocale == code
-                                              ? FontWeight.bold
-                                              : FontWeight.normal),
+                                        fontSize: 11,
+                                        fontWeight: _selectedLocale == code
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                      ),
                                     ),
                                   ),
                                 ),

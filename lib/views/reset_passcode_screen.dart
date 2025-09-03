@@ -13,6 +13,7 @@ class ResetPasscodeScreen extends StatefulWidget {
 class _ResetPasscodeScreenState extends State<ResetPasscodeScreen> {
   @override
   Widget build(BuildContext context) {
+    debugPrint('ResetPasscodeScreen: token="${widget.token}"');
     debugPrint('ResetPasscodeScreen build: widget.token="${widget.token}"');
     // Token null olamaz, sadece boşluk kontrolü yapıyoruz
     if (widget.token.isEmpty) {
