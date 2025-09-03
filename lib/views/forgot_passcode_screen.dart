@@ -204,7 +204,7 @@ class _ForgotPasscodePageState extends State<ForgotPasscodePage> {
                                 )
                               : Text(
                                   _t('sendResetLink'),
-                                  style: TextStyle(fontSize: 16),
+                                  style: const TextStyle(fontSize: 16),
                                 ),
                         ),
                       ),

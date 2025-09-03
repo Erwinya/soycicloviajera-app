@@ -8,7 +8,8 @@ import '../../l10n/app_localizations.dart';
 import '../services/login_service.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  final void Function(Locale)? onLocaleChanged;
+  const LoginScreen({Key? key, this.onLocaleChanged}) : super(key: key);
 
   @override
   State<LoginScreen> createState() => _LoginPageState();
@@ -20,7 +21,6 @@ class _LoginPageState extends State<LoginScreen> {
   bool _visible = false;
   bool _isLoading = false;
   String _errorMessage = '';
-  String _selectedLocale = 'en'; // Default locale
   late final LoginService _loginService;
   final String _yourBackendDomain = 'YOUR_BACKEND_BASE_URL';
   final bool _isProduction = bool.fromEnvironment('dart.vm.product');
@@ -54,12 +54,7 @@ class _LoginPageState extends State<LoginScreen> {
   }
 
   Future<void> _loadSelectedLocale() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedLocale = prefs.getString('locale');
-    if (!mounted) return;
-    setState(() {
-      _selectedLocale = savedLocale ?? 'en';
-    });
+    // Artık _selectedLocale kullanılmıyor
   }
 
   Future<void> _checkIfLoggedIn() async {
@@ -75,10 +70,9 @@ class _LoginPageState extends State<LoginScreen> {
   Future<void> _changeLang(String newLang) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('locale', newLang);
-    if (!mounted) return;
-    setState(() {
-      _selectedLocale = newLang;
-    });
+    if (widget.onLocaleChanged != null) {
+      widget.onLocaleChanged!(Locale(newLang));
+    }
   }
 
   // Use l10n for translations instead of manual map
@@ -240,8 +234,8 @@ class _LoginPageState extends State<LoginScreen> {
                             border: Border.all(color: Colors.red.shade200),
                             borderRadius: BorderRadius.circular(4),
                           ),
-                          child: Row(
-                            children: const [
+                          child: const Row(
+                            children: [
                               Icon(Icons.error_outline,
                                   color: Colors.red, size: 20),
                               SizedBox(width: 8),
@@ -364,7 +358,7 @@ class _LoginPageState extends State<LoginScreen> {
                                 )
                               : Text(
                                   _t('login'),
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -413,6 +407,8 @@ class _LoginPageState extends State<LoginScreen> {
                           margin: const EdgeInsets.only(top: 16),
                           child: Row(
                             children: _languageCodes.map((code) {
+                              final currentLocale =
+                                  Localizations.localeOf(context).languageCode;
                               return Expanded(
                                 child: Padding(
                                   padding:
@@ -420,14 +416,14 @@ class _LoginPageState extends State<LoginScreen> {
                                   child: OutlinedButton(
                                     onPressed: () => _changeLang(code),
                                     style: OutlinedButton.styleFrom(
-                                      backgroundColor: _selectedLocale == code
+                                      backgroundColor: currentLocale == code
                                           ? Colors.blue.shade50
                                           : Colors.transparent,
-                                      foregroundColor: _selectedLocale == code
+                                      foregroundColor: currentLocale == code
                                           ? Colors.blue.shade700
                                           : Colors.black54,
                                       side: BorderSide(
-                                        color: _selectedLocale == code
+                                        color: currentLocale == code
                                             ? Colors.blue.shade300
                                             : Colors.grey.shade300,
                                       ),
@@ -443,7 +439,7 @@ class _LoginPageState extends State<LoginScreen> {
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         fontSize: 11,
-                                        fontWeight: _selectedLocale == code
+                                        fontWeight: currentLocale == code
                                             ? FontWeight.bold
                                             : FontWeight.normal,
                                       ),

@@ -36,6 +36,12 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   Locale? _locale;
 
+  void setLocale(Locale locale) {
+    setState(() {
+      _locale = locale;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -47,13 +53,14 @@ class _MyAppState extends State<MyApp> {
     final savedLocale = prefs.getString('locale');
     if (!mounted) return;
     setState(() {
-      _locale = Locale(savedLocale ?? 'en');
+      _locale = Locale(savedLocale ?? 'es');
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      key: ValueKey(_locale?.languageCode ?? 'es'),
       title: 'Viajeras Frontend',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -74,16 +81,22 @@ class _MyAppState extends State<MyApp> {
           ),
         ),
       ),
-      locale: _locale ?? const Locale('en'),
+      locale: _locale ?? const Locale('es'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
+      localeResolutionCallback: (locale, supportedLocales) {
+        // Her zaman İspanyolca başlat
+        return const Locale('es');
+      },
 
       // Eğer locale yüklenmediyse loading göster
       home: _locale == null
           ? const Scaffold(
               body: Center(child: CircularProgressIndicator()),
             )
-          : const LoginScreen(),
+          : LoginScreen(
+              onLocaleChanged: setLocale,
+            ),
 
       routes: {
         '/register': (context) => const RegisterScreen(),
