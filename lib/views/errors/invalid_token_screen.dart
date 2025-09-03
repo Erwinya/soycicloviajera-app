@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 
 class InvalidTokenScreen extends StatefulWidget {
   const InvalidTokenScreen({Key? key}) : super(key: key);
@@ -84,20 +85,22 @@ class _InvalidTokenScreenState extends State<InvalidTokenScreen> {
                                   ),
                                 ),
                               ),
-                              child: const Padding(
-                                padding: EdgeInsets.all(16.0),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
                                 child: Row(
                                   children: [
-                                    Icon(
+                                    const Icon(
                                       Icons.error,
                                       color: Colors.red,
                                       size: 20,
                                     ),
-                                    SizedBox(width: 12),
+                                    const SizedBox(width: 12),
                                     Expanded(
                                       child: Text(
-                                        'Invalid or expired reset token.',
-                                        style: TextStyle(
+                                        AppLocalizations.of(context)
+                                                ?.invalidOrExpiredToken ??
+                                            'Invalid or expired reset token.',
+                                        style: const TextStyle(
                                           color: Colors.red,
                                           fontWeight: FontWeight.w500,
                                         ),
@@ -124,9 +127,10 @@ class _InvalidTokenScreenState extends State<InvalidTokenScreen> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                            child: const Text(
-                              'Back to Reset',
-                              style: TextStyle(
+                            child: Text(
+                              AppLocalizations.of(context)?.backToReset ??
+                                  'Back to Reset',
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
                               ),

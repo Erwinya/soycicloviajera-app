@@ -1,0 +1,6 @@
+flutter:
+  generate: true
+  uses-material-design: true
+  assets:
+    - lib/assets/images/
+    - l10n/

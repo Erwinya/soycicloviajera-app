@@ -6,6 +6,43 @@ import 'app_localizations.dart';
 
 /// The translations for Turkish (`tr`).
 class AppLocalizationsTr extends AppLocalizations {
+  @override
+  String get invalidOrExpiredToken =>
+      'Geçersiz veya süresi dolmuş sıfırlama anahtarı.';
+  @override
+  String get backToReset => 'Sıfırlamaya Dön';
+  @override
+  String get updateFailed => 'Güncelleme başarısız.';
+  @override
+  String get surname => 'Soyad';
+  @override
+  String get phoneNumber => 'Telefon Numarası';
+  @override
+  String get telegram => 'Telegram';
+  @override
+  String get registerDescription => 'Açıklama';
+  @override
+  String get signup => 'Kayıt Ol';
+  @override
+  String get registrationError => 'Kayıt sırasında bir hata oluştu.';
+  @override
+  String get account => 'Hesap';
+  @override
+  String get password => 'Şifre';
+  @override
+  String get forgotPassword => 'Şifremi Unuttum';
+  @override
+  String get login => 'Giriş Yap';
+  @override
+  String get signUp => 'Kayıt Ol';
+  @override
+  String get fillAllFields => 'Lütfen tüm alanları doldurun.';
+  @override
+  String get invalidCredentials => 'Geçersiz bilgiler.';
+  @override
+  String get loginFailedGeneric => 'Giriş başarısız.';
+  @override
+  String get errorConnecting => 'Sunucuya bağlanırken hata.';
   AppLocalizationsTr([String locale = 'tr']) : super(locale);
 
   @override

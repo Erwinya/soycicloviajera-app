@@ -17,17 +17,24 @@ class _ResetPasscodeScreenState extends State<ResetPasscodeScreen> {
     debugPrint('ResetPasscodeScreen build: widget.token="${widget.token}"');
     // Token null olamaz, sadece boşluk kontrolü yapıyoruz
     if (widget.token.isEmpty) {
-      return const Scaffold(
+      return Scaffold(
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error, color: Colors.red, size: 48),
-              SizedBox(height: 16),
-              Text(
+              const Icon(Icons.error, color: Colors.red, size: 48),
+              const SizedBox(height: 16),
+              const Text(
                 'Invalid or missing token. Please use the link from your email.',
                 style: TextStyle(fontSize: 18, color: Colors.red),
                 textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pushReplacementNamed('/login');
+                },
+                child: const Text('Go back to Login'),
               ),
             ],
           ),
@@ -61,6 +68,20 @@ class _ResetPasscodeScreenState extends State<ResetPasscodeScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
+                      const SizedBox(height: 24),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).pushReplacementNamed('/login');
+                        },
+                        child: const Text('Go back to Login'),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).pushReplacementNamed('/login');
+                        },
+                        child: const Text('Go back to Login'),
+                      ),
                       const Text(
                         'Reset Passcode',
                         style: TextStyle(

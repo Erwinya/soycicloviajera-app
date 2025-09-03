@@ -3,17 +3,18 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../l10n/app_localizations.dart';
 
 import '../services/login_service.dart';
 
-class Login extends StatefulWidget {
-  const Login({Key? key}) : super(key: key);
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({Key? key}) : super(key: key);
 
   @override
-  State<Login> createState() => _LoginPageState();
+  State<LoginScreen> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<Login> {
+class _LoginPageState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _visible = false;
@@ -80,47 +81,35 @@ class _LoginPageState extends State<Login> {
     });
   }
 
+  // Use l10n for translations instead of manual map
   String _t(String key) {
-    final Map<String, Map<String, String>> translations = {
-      'tr': {
-        'account': 'Hesap',
-        'email': 'Email',
-        'password': 'Şifre',
-        'forgot': 'Şifremi Unuttum',
-        'login': 'Giriş Yap',
-        'signup': 'Kayıt Ol',
-        'fillAllFields': 'Lütfen tüm alanları doldurun',
-        'invalidCredentials': 'Geçersiz email veya şifre',
-        'loginFailedGeneric': 'Giriş yapılamadı. Lütfen tekrar deneyin.',
-        'errorConnecting': 'Sunucuya bağlanırken hata oluştu.',
-      },
-      'en': {
-        'account': 'Account',
-        'email': 'Email',
-        'password': 'Password',
-        'forgot': 'Forgot Password',
-        'login': 'Login',
-        'signup': 'Sign Up',
-        'fillAllFields': 'Please fill all fields',
-        'invalidCredentials': 'Invalid email or password',
-        'loginFailedGeneric': 'Login failed. Please try again.',
-        'errorConnecting': 'Error connecting to the server.',
-      },
-      'es': {
-        'account': 'Cuenta',
-        'email': 'Correo',
-        'password': 'Contraseña',
-        'forgot': 'Olvidé mi contraseña',
-        'login': 'Iniciar Sesión',
-        'signup': 'Registrarse',
-        'fillAllFields': 'Por favor llene todos los campos',
-        'invalidCredentials': 'Email o contraseña inválidos',
-        'loginFailedGeneric':
-            'Error al iniciar sesión. Por favor, inténtelo de nuevo.',
-        'errorConnecting': 'Error al conectar con el servidor.',
-      },
-    };
-    return translations[_selectedLocale]?[key] ?? key;
+    // Assuming you have generated AppLocalizations using flutter_localizations and intl
+    // Import: import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+    final localizations = AppLocalizations.of(context);
+    switch (key) {
+      case 'account':
+        return localizations?.account ?? key;
+      case 'email':
+        return localizations?.email ?? key;
+      case 'password':
+        return localizations?.password ?? key;
+      case 'forgot':
+        return localizations?.forgotPassword ?? key;
+      case 'login':
+        return localizations?.login ?? key;
+      case 'signup':
+        return localizations?.signUp ?? key;
+      case 'fillAllFields':
+        return localizations?.fillAllFields ?? key;
+      case 'invalidCredentials':
+        return localizations?.invalidCredentials ?? key;
+      case 'loginFailedGeneric':
+        return localizations?.loginFailedGeneric ?? key;
+      case 'errorConnecting':
+        return localizations?.errorConnecting ?? key;
+      default:
+        return key;
+    }
   }
 
   Future<void> _login() async {
@@ -264,12 +253,12 @@ class _LoginPageState extends State<Login> {
                       // Email field
                       TextField(
                         controller: _emailController,
-                        decoration: const InputDecoration(
-                          hintText: 'Email',
-                          prefixIcon: Icon(Icons.email_outlined),
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          hintText: _t('email'),
+                          prefixIcon: const Icon(Icons.email_outlined),
+                          border: const OutlineInputBorder(),
                           isDense: true,
-                          contentPadding: EdgeInsets.all(12),
+                          contentPadding: const EdgeInsets.all(12),
                         ),
                         keyboardType: TextInputType.emailAddress,
                         textInputAction: TextInputAction.next,
@@ -297,16 +286,16 @@ class _LoginPageState extends State<Login> {
                                 },
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
-                                  children: const [
+                                  children: [
                                     Text(
-                                      'Forgot Password',
-                                      style: TextStyle(
+                                      _t('forgot'),
+                                      style: const TextStyle(
                                         fontSize: 12,
                                         color: Colors.blue,
                                         decoration: TextDecoration.none,
                                       ),
                                     ),
-                                    Icon(
+                                    const Icon(
                                       Icons.chevron_right,
                                       color: Colors.blue,
                                       size: 16,
@@ -375,7 +364,7 @@ class _LoginPageState extends State<Login> {
                                 )
                               : Text(
                                   _t('login'),
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -397,16 +386,16 @@ class _LoginPageState extends State<Login> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
+                                children: [
                                   Text(
-                                    'Sign Up',
-                                    style: TextStyle(
+                                    _t('signup'),
+                                    style: const TextStyle(
                                       color: Colors.blue,
                                       fontWeight: FontWeight.w500,
                                       decoration: TextDecoration.none,
                                     ),
                                   ),
-                                  Icon(
+                                  const Icon(
                                     Icons.chevron_right,
                                     color: Colors.blue,
                                     size: 18,

@@ -6,6 +6,43 @@ import 'app_localizations.dart';
 
 /// The translations for Spanish Castilian (`es`).
 class AppLocalizationsEs extends AppLocalizations {
+  @override
+  String get invalidOrExpiredToken =>
+      'Token de restablecimiento inválido o expirado.';
+  @override
+  String get backToReset => 'Volver a restablecer';
+  @override
+  String get updateFailed => 'La actualización falló.';
+  @override
+  String get surname => 'Apellido';
+  @override
+  String get phoneNumber => 'Número de teléfono';
+  @override
+  String get telegram => 'Telegram';
+  @override
+  String get registerDescription => 'Descripción';
+  @override
+  String get signup => 'Registrarse';
+  @override
+  String get registrationError => 'Ocurrió un error durante el registro.';
+  @override
+  String get account => 'Cuenta';
+  @override
+  String get password => 'Contraseña';
+  @override
+  String get forgotPassword => 'Olvidé mi contraseña';
+  @override
+  String get login => 'Iniciar sesión';
+  @override
+  String get signUp => 'Registrarse';
+  @override
+  String get fillAllFields => 'Por favor, complete todos los campos.';
+  @override
+  String get invalidCredentials => 'Credenciales inválidas.';
+  @override
+  String get loginFailedGeneric => 'Error al iniciar sesión.';
+  @override
+  String get errorConnecting => 'Error al conectar con el servidor.';
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override

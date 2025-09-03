@@ -53,15 +53,6 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    if (_locale == null) {
-      return const MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        ),
-      );
-    }
-
     return MaterialApp(
       title: 'Viajeras Frontend',
       debugShowCheckedModeBanner: false,
@@ -83,56 +74,48 @@ class _MyAppState extends State<MyApp> {
           ),
         ),
       ),
-      locale: _locale,
+      locale: _locale ?? const Locale('en'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      initialRoute: '/login',
+
+      // Eğer locale yüklenmediyse loading göster
+      home: _locale == null
+          ? const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            )
+          : const LoginScreen(),
+
       routes: {
         '/register': (context) => const RegisterScreen(),
-        '/login': (context) => const Login(),
         '/forgot-passcode': (context) => const ForgotPasscodePage(),
         '/map': (context) => const MapScreen(),
         '/invalid-token': (context) => const InvalidTokenScreen(),
       },
+
       onGenerateRoute: (settings) {
         debugPrint(
             'onGenerateRoute: name=${settings.name}, arguments=${settings.arguments}');
         final routeName = settings.name ?? '';
-        if (routeName.isEmpty) {
-          return MaterialPageRoute(
-            builder: (context) => const InvalidTokenScreen(),
-            settings: settings,
-          );
-        }
 
         final uri = Uri.tryParse(routeName);
-        if (uri == null || uri.pathSegments.isEmpty) {
-          return MaterialPageRoute(
-            builder: (context) => const InvalidTokenScreen(),
-            settings: settings,
-          );
-        }
-
-        if (uri.pathSegments[0] == 'reset-passcode') {
-          String token = uri.queryParameters['token'] ?? '';
-          if (token.isEmpty && settings.arguments is Map) {
-            final args = settings.arguments as Map<String, dynamic>?;
-            if (args != null &&
-                args['token'] is String &&
-                (args['token'] as String).isNotEmpty) {
-              token = args['token'] as String;
+        if (uri != null && uri.pathSegments.isNotEmpty) {
+          if (uri.pathSegments[0] == 'reset-passcode') {
+            String token = uri.queryParameters['token'] ?? '';
+            if (token.isEmpty && settings.arguments is Map) {
+              final args = settings.arguments as Map<String, dynamic>?;
+              if (args != null &&
+                  args['token'] is String &&
+                  (args['token'] as String).isNotEmpty) {
+                token = args['token'] as String;
+              }
+            }
+            if (token.isNotEmpty) {
+              return MaterialPageRoute(
+                builder: (context) => ResetPasscodeScreen(token: token),
+                settings: settings,
+              );
             }
           }
-          if (token.isNotEmpty) {
-            return MaterialPageRoute(
-              builder: (context) => ResetPasscodeScreen(token: token),
-              settings: settings,
-            );
-          }
-          return MaterialPageRoute(
-            builder: (context) => const InvalidTokenScreen(),
-            settings: settings,
-          );
         }
 
         return MaterialPageRoute(
@@ -140,6 +123,7 @@ class _MyAppState extends State<MyApp> {
           settings: settings,
         );
       },
+
       onUnknownRoute: (settings) => MaterialPageRoute(
         builder: (context) => const InvalidTokenScreen(),
       ),

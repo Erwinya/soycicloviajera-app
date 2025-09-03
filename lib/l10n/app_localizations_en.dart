@@ -6,6 +6,42 @@ import 'app_localizations.dart';
 
 /// The translations for English (`en`).
 class AppLocalizationsEn extends AppLocalizations {
+  @override
+  String get invalidOrExpiredToken => 'Invalid or expired reset token.';
+  @override
+  String get backToReset => 'Back to Reset';
+  @override
+  String get updateFailed => 'Update failed.';
+  @override
+  String get surname => 'Surname';
+  @override
+  String get phoneNumber => 'Phone Number';
+  @override
+  String get telegram => 'Telegram';
+  @override
+  String get registerDescription => 'Description';
+  @override
+  String get signup => 'Sign Up';
+  @override
+  String get registrationError => 'An error occurred during registration.';
+  @override
+  String get account => 'Account';
+  @override
+  String get password => 'Password';
+  @override
+  String get forgotPassword => 'Forgot Password';
+  @override
+  String get login => 'Login';
+  @override
+  String get signUp => 'Sign Up';
+  @override
+  String get fillAllFields => 'Please fill all fields.';
+  @override
+  String get invalidCredentials => 'Invalid credentials.';
+  @override
+  String get loginFailedGeneric => 'Login failed.';
+  @override
+  String get errorConnecting => 'Error connecting to server.';
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override

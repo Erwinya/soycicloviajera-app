@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../l10n/app_localizations.dart';
 
 class LanguageSwitcher extends StatefulWidget {
   final Function(Locale)? onLanguageChanged;
@@ -98,7 +99,9 @@ class _LanguageSwitcherState extends State<LanguageSwitcher> {
               ),
             ),
             child: Text(
-              _languageLabels[code] ?? code.toUpperCase(),
+              AppLocalizations.of(context)?.languageName(code) ??
+                  _languageLabels[code] ??
+                  code.toUpperCase(),
               style: TextStyle(
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                 fontSize: 14,

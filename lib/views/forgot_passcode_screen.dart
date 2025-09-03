@@ -162,7 +162,7 @@ class _ForgotPasscodePageState extends State<ForgotPasscodePage> {
                         constraints: const BoxConstraints(maxWidth: 180),
                         margin: const EdgeInsets.fromLTRB(0, 8, 0, 16),
                         child: Image.asset(
-                          'assets/images/cicloviajera-color-2.png',
+                          'lib/assets/images/cicloviajera-color-2.png',
                           fit: BoxFit.contain,
                         ),
                       ),
@@ -204,7 +204,7 @@ class _ForgotPasscodePageState extends State<ForgotPasscodePage> {
                                 )
                               : Text(
                                   _t('sendResetLink'),
-                                  style: const TextStyle(fontSize: 16),
+                                  style: TextStyle(fontSize: 16),
                                 ),
                         ),
                       ),
