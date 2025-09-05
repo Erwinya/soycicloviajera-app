@@ -126,6 +126,7 @@ sdk: flutter
 flutter_localizations:
 sdk: flutter
 intl: any
+
 # Add other dependencies as needed
 Dev Dependencies
 yaml
@@ -133,6 +134,7 @@ dev_dependencies:
 flutter_test:
 sdk: flutter
 flutter_lints: ^2.0.0
+
 # Add testing and development tools
 🚀 Deployment
 Android
