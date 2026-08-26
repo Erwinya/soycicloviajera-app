@@ -72,6 +72,13 @@ flutter run \
 
 Defaults target local development (`localhost:8080`, HTTP).
 
+On an Android emulator, `localhost` refers to the emulator itself. Use
+`10.0.2.2` to reach a backend running on the host machine:
+
+```bash
+flutter run --dart-define=API_HOST=10.0.2.2:8080
+```
+
 For Android builds on Windows, ensure Flutter uses JDK 21:
 
 ```bash

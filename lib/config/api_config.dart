@@ -2,6 +2,9 @@
 ///
 /// Override at build/run time:
 /// `flutter run --dart-define=API_HOST=api.example.com --dart-define=API_USE_HTTPS=true`
+///
+/// Android emulators should use `10.0.2.2` instead of `localhost` to reach
+/// the host machine, e.g. `API_HOST=10.0.2.2:8080`.
 class ApiConfig {
   ApiConfig._();
 
