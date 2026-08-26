@@ -46,7 +46,7 @@ class AppLocalizationsTr extends AppLocalizations {
   AppLocalizationsTr([String locale = 'tr']) : super(locale);
 
   @override
-  String get appTitle => 'Viajeras';
+  String get appTitle => 'Soy Cicloviajera';
 
   @override
   String get welcome_message => 'Hoşgeldiniz';

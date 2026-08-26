@@ -46,7 +46,7 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
-  String get appTitle => 'Viajeras';
+  String get appTitle => 'Soy Cicloviajera';
 
   @override
   String get welcome_message => 'Bienvenido';

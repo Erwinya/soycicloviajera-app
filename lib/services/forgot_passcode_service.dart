@@ -1,14 +1,14 @@
 import 'package:http/http.dart' as http;
 
-class ForgotPasscodeService {
-  final String baseUrl;
-  ForgotPasscodeService({required this.baseUrl});
+import '../config/api_config.dart';
 
+class ForgotPasscodeService {
   Future<http.Response> sendResetLink(String email) async {
-    final url = Uri.parse(
-        'http://$baseUrl/api/forgot-passcode?email=${Uri.encodeComponent(email)}');
-    return await http.post(
-      url,
+    return http.post(
+      ApiConfig.endpoint(
+        '/api/forgot-passcode',
+        queryParameters: {'email': email},
+      ),
       headers: {
         'accept': '*/*',
       },

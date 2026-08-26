@@ -1,5 +1,6 @@
-name: viajerasfrontend2
-description: A new Flutter project.
+name: soycicloviajera_app
+description: Mobile client for Soy Cicloviajera — a community of women who travel by bicycle.
+publish_to: 'none'
 
 version: 1.0.0+1
 
@@ -18,7 +19,6 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   intl: any
-  get: ^4.6.6
 
 dev_dependencies:
   flutter_test:

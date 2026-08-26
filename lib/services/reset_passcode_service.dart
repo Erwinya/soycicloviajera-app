@@ -1,16 +1,17 @@
 import 'package:dio/dio.dart';
 
+import '../config/api_config.dart';
+
 class ResetPasscodeService {
   final Dio dio;
-  final String baseUrl;
-  ResetPasscodeService({Dio? dioClient, required this.baseUrl})
-      : dio = dioClient ?? Dio();
+  ResetPasscodeService({Dio? dioClient}) : dio = dioClient ?? Dio();
 
-  Future<Response> resetPasscode(
-      {required String token, required String passcode}) async {
-    final url = 'http://$baseUrl/api/reset-passcode/$token';
-    return await dio.post(
-      url,
+  Future<Response<dynamic>> resetPasscode({
+    required String token,
+    required String passcode,
+  }) async {
+    return dio.post(
+      ApiConfig.endpoint('/api/reset-passcode/$token').toString(),
       data: '',
       queryParameters: {'passcode': passcode},
     );

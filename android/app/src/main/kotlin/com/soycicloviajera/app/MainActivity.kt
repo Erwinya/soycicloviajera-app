@@ -1,4 +1,4 @@
-package com.viajerasfrontend2.viajerasfrontend2
+package com.soycicloviajera.app
 
 import io.flutter.embedding.android.FlutterActivity
 

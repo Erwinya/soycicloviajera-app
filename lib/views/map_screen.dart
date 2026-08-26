@@ -25,11 +25,11 @@ class _MapScreenState extends State<MapScreen> {
   String _selectedContactMethod = 'EMAIL';
 
   Map<String, dynamic> _user = {
-    'name': 'Sandra Adams',
-    'email': 'sandra_a88@gmail.com',
-    'travelerDescription': 'I love traveling and meeting new people!',
+    'name': '',
+    'email': '',
+    'travelerDescription': '',
     'preferredContact': 'EMAIL',
-    'contact': 'sandra_a88@gmail.com',
+    'contact': '',
   };
 
   final List<Map<String, dynamic>> _contactOptions = const [
@@ -38,8 +38,7 @@ class _MapScreenState extends State<MapScreen> {
     {'text': 'WhatsApp', 'value': 'WHATSAPP'}
   ];
 
-  final String _baseUrl = 'localhost:8080';
-  late final MapService _mapService = MapService(baseUrl: _baseUrl);
+  late final MapService _mapService = MapService();
 
   final Map<String, Map<String, String>> _translations = const {
     'tr': {

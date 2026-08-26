@@ -1,12 +1,11 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-class LoginService {
-  final String baseUrl;
-  LoginService({required this.baseUrl});
+import '../config/api_config.dart';
 
+class LoginService {
   Future<Map<String, dynamic>> login(String email, String passcode) async {
-    final url = Uri.parse('$baseUrl/api/traveller/login');
+    final url = ApiConfig.endpoint('/api/traveller/login');
     final response = await http
         .post(
           url,

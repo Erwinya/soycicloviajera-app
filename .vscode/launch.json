@@ -6,20 +6,20 @@
     "configurations": [
         
         {
-            "name": "viajerasfrontend2",
+            "name": "Soy Cicloviajera",
             "request": "launch",
             "type": "dart",
             "program": "lib/main.dart"
         },
         {
-            "name": "viajerasfrontend2 (profile mode)",
+            "name": "Soy Cicloviajera (profile mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile",
             "program": "lib/main.dart"
         },
         {
-            "name": "viajerasfrontend2 (release mode)",
+            "name": "Soy Cicloviajera (release mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release",

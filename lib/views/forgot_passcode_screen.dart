@@ -15,14 +15,8 @@ class _ForgotPasscodePageState extends State<ForgotPasscodePage> {
   bool _loading = false;
   String _successMessage = '';
   String _errorMessage = '';
-  final String _baseUrl = 'your-backend-url.com'; // Replace with actual URL
-  late final ForgotPasscodeService _forgotPasscodeService;
-
-  @override
-  void initState() {
-    super.initState();
-    _forgotPasscodeService = ForgotPasscodeService(baseUrl: _baseUrl);
-  }
+  late final ForgotPasscodeService _forgotPasscodeService =
+      ForgotPasscodeService();
 
   @override
   void dispose() {

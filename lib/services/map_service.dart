@@ -1,11 +1,13 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import '../config/api_config.dart';
+
 class MapService {
   Future<void> updateLocationDescription(String token, double latitude,
       double longitude, String newDescription) async {
     final response = await http.patch(
-      Uri.parse('http://$baseUrl/api/locations'),
+      ApiConfig.endpoint('/api/locations'),
       headers: {
         'accept': '*/*',
         'X-Token': token,
@@ -23,12 +25,9 @@ class MapService {
     }
   }
 
-  final String baseUrl;
-  MapService({required this.baseUrl});
-
   Future<List<Map<String, dynamic>>> fetchLocations(String token) async {
     final response = await http.get(
-      Uri.parse('http://$baseUrl/api/locations'),
+      ApiConfig.endpoint('/api/locations'),
       headers: {
         'accept': '*/*',
         'X-Token': token,
@@ -42,7 +41,7 @@ class MapService {
 
   Future<bool> updateProfile(String token, Map<String, dynamic> data) async {
     final response = await http.put(
-      Uri.parse('http://$baseUrl/api/profile'),
+      ApiConfig.endpoint('/api/profile'),
       headers: {
         'accept': '*/*',
         'X-Token': token,

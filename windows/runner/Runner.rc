@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.viajerasfrontend2" "\0"
-            VALUE "FileDescription", "viajerasfrontend2" "\0"
+            VALUE "CompanyName", "Soy Cicloviajera" "\0"
+            VALUE "FileDescription", "Soy Cicloviajera" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "viajerasfrontend2" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2025 com.viajerasfrontend2. All rights reserved." "\0"
-            VALUE "OriginalFilename", "viajerasfrontend2.exe" "\0"
-            VALUE "ProductName", "viajerasfrontend2" "\0"
+            VALUE "InternalName", "soycicloviajera_app" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2025 Soy Cicloviajera. All rights reserved." "\0"
+            VALUE "OriginalFilename", "soycicloviajera_app.exe" "\0"
+            VALUE "ProductName", "Soy Cicloviajera" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

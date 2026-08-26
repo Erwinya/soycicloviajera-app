@@ -21,10 +21,7 @@ class _LoginPageState extends State<LoginScreen> {
   bool _visible = false;
   bool _isLoading = false;
   String _errorMessage = '';
-  late final LoginService _loginService;
-  final String _yourBackendDomain = 'YOUR_BACKEND_BASE_URL';
-  final bool _isProduction = bool.fromEnvironment('dart.vm.product');
-  late final String _baseUrl;
+  late final LoginService _loginService = LoginService();
 
   final List<String> _languageCodes = const ['es', 'en', 'tr'];
   final Map<String, String> _languageLabels = const {
@@ -36,10 +33,6 @@ class _LoginPageState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    _baseUrl = _isProduction
-        ? 'https://$_yourBackendDomain'
-        : 'http://$_yourBackendDomain';
-    _loginService = LoginService(baseUrl: _baseUrl);
     _loadSelectedLocale();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _checkIfLoggedIn();

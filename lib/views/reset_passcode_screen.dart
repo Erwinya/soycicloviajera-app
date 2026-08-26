@@ -229,15 +229,8 @@ class _ResetPasscodeScreenState extends State<ResetPasscodeScreen> {
   bool _isLoading = false;
   bool _showSuccessMessage = false;
   bool _showErrorMessage = false;
-  final String _baseUrl =
-      'localhost:3000'; // Replace with your actual backend URL
-  late final ResetPasscodeService _resetPasscodeService;
-
-  @override
-  void initState() {
-    super.initState();
-    _resetPasscodeService = ResetPasscodeService(baseUrl: _baseUrl);
-  }
+  late final ResetPasscodeService _resetPasscodeService =
+      ResetPasscodeService();
 
   @override
   void dispose() {

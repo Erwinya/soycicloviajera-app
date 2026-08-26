@@ -61,7 +61,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       key: ValueKey(_locale?.languageCode ?? 'es'),
-      title: 'Viajeras Frontend',
+      title: 'Soy Cicloviajera',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
