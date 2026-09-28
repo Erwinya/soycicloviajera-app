@@ -60,6 +60,15 @@ flutter pub get
 flutter run
 ```
 
+Windows PowerShell:
+
+```powershell
+git clone https://github.com/Erwinya/soycicloviajera-app.git
+cd soycicloviajera-app
+flutter pub get
+flutter run
+```
+
 ### Backend configuration
 
 API settings live in `lib/config/api_config.dart`. Override at run time:
@@ -70,12 +79,22 @@ flutter run \
   --dart-define=API_USE_HTTPS=true
 ```
 
+```powershell
+flutter run `
+  --dart-define=API_HOST=api.soycicloviajera.com `
+  --dart-define=API_USE_HTTPS=true
+```
+
 Defaults target local development (`localhost:8080`, HTTP).
 
 On an Android emulator, `localhost` refers to the emulator itself. Use
 `10.0.2.2` to reach a backend running on the host machine:
 
 ```bash
+flutter run --dart-define=API_HOST=10.0.2.2:8080
+```
+
+```powershell
 flutter run --dart-define=API_HOST=10.0.2.2:8080
 ```
 
