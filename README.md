@@ -104,6 +104,10 @@ For Android builds on Windows, ensure Flutter uses JDK 21:
 flutter config --jdk-dir="C:\Program Files\Microsoft\jdk-21.0.11.10-hotspot"
 ```
 
+## CI
+
+GitHub Actions runs `flutter analyze` and `flutter test` on push.
+
 ## Build
 
 ```bash
