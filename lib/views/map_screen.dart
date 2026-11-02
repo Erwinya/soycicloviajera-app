@@ -286,7 +286,7 @@ class _MapScreenState extends State<MapScreen> {
                   decoration: InputDecoration(labelText: _t('aboutMe'))),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                value: _selectedContactMethod,
+                initialValue: _selectedContactMethod,
                 items: _contactOptions
                     .map((option) => DropdownMenuItem<String>(
                           value: option['value'],
@@ -294,9 +294,7 @@ class _MapScreenState extends State<MapScreen> {
                         ))
                     .toList(),
                 onChanged: (value) {
-                  setState(() {
-                    _selectedContactMethod = value ?? 'EMAIL';
-                  });
+                  _selectedContactMethod = value ?? 'EMAIL';
                 },
                 decoration: InputDecoration(labelText: _t('preferredContact')),
               ),

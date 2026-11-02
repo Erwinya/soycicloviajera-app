@@ -251,7 +251,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                       // Preferred Contact Dropdown
                       DropdownButtonFormField<String>(
-                        value: _selectedPreferredContact,
+                        initialValue: _selectedPreferredContact,
                         decoration: InputDecoration(
                           labelText: l10n.preferredContact,
                           border: const OutlineInputBorder(),
@@ -264,9 +264,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         }).toList(),
                         onChanged: (String? newValue) {
                           if (newValue != null) {
-                            setState(() {
-                              _selectedPreferredContact = newValue;
-                            });
+                            _selectedPreferredContact = newValue;
                           }
                         },
                         validator: (value) =>
